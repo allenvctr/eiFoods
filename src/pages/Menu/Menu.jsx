@@ -1,51 +1,41 @@
-import { useNavigate } from 'react-router-dom'
-import { useOrder } from '../../context/useOrder'
-import styles from './Menu.module.css'
+import { useNavigate } from "react-router-dom";
+import { useOrder } from "../../context/useOrder";
+import styles from "./Menu.module.css";
+import Navbar from "../../components/Navbar/Navbar";
 
 const MENU_DO_DIA = [
   {
     id: 1,
-    nome: 'Arroz + Frango Assado + Batata',
+    nome: "Arroz + Frango Assado + Batata",
     preco: 250,
-    emoji: '🍗',
+    emoji: "🍗",
   },
   {
     id: 2,
-    nome: 'Peixe Grelhado + Arroz',
+    nome: "Peixe Grelhado + Arroz",
     preco: 220,
-    emoji: '🐟',
+    emoji: "🐟",
   },
   {
     id: 3,
-    nome: 'Arroz + Carne Guisada + Salada',
+    nome: "Arroz + Carne Guisada + Salada",
     preco: 270,
-    emoji: '🥩',
+    emoji: "🥩",
   },
-]
+];
 
 export default function Menu() {
-  const navigate = useNavigate()
-  const { dispatch } = useOrder()
+  const navigate = useNavigate();
+  const { dispatch } = useOrder();
 
   function handleSelecionar(prato) {
-    dispatch({ type: 'SELECT_DISH', payload: prato })
-    navigate('/customize')
+    dispatch({ type: "SELECT_DISH", payload: prato });
+    navigate("/customize");
   }
 
   return (
     <div className={styles.page}>
-
-      <header className={styles.header}>
-        <div className={styles.logo}>
-          <span>🍽️</span>
-          <span className={styles.logoText}>eiFoods</span>
-        </div>
-        <nav className={styles.nav}>
-          <span onClick={() => navigate('/')}>Início</span>
-          <span className={styles.navActive}>Menu</span>
-          <span onClick={() => navigate('/confirmation')}>Contactos</span>
-        </nav>
-      </header>
+      <Navbar />
 
       <main className={styles.main}>
         <h1 className={styles.title}>Menu do dia</h1>
@@ -70,7 +60,6 @@ export default function Menu() {
           ))}
         </div>
       </main>
-
     </div>
-  )
+  );
 }
