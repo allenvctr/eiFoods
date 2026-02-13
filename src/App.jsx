@@ -1,35 +1,25 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import OrderProvider from './context/OrderProvider'
+import Home from './pages/Home/Home'
+import Menu from './pages/Menu/Menu'
+import Customize from './pages/Customize/Customize'
+import OrderSummary from './pages/OrderSummary/OrderSummary'
+import Delivery from './pages/Delivery/Delivery'
+import Confirmation from './pages/Confirmation/Confirmation'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <BrowserRouter>
+      <OrderProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/customize" element={<Customize />} />
+          <Route path="/order-summary" element={<OrderSummary />} />
+          <Route path="/delivery" element={<Delivery />} />
+          <Route path="/confirmation" element={<Confirmation />} />
+        </Routes>
+      </OrderProvider>
+    </BrowserRouter>
   )
 }
-
-export default App
