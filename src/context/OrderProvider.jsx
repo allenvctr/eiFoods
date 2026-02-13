@@ -1,21 +1,6 @@
 import { useReducer } from 'react'
 import { OrderContext } from './OrderContext'
-
-const initialState = {
-  selectedDish: null,
-  customizations: {
-    free: [],
-    paid: '',
-    salt: 'Normal',
-  },
-  orderItems: [],
-  deliveryDetails: {
-    name: '',
-    company: '',
-    location: '',
-    contact: '',
-  },
-}
+import { initialState } from './initialState'
 
 function orderReducer(state, action) {
   switch (action.type) {
@@ -24,7 +9,12 @@ function orderReducer(state, action) {
     case 'SET_CUSTOMIZATION':
       return { ...state, customizations: { ...state.customizations, ...action.payload } }
     case 'ADD_TO_ORDER':
-      return { ...state, orderItems: [...state.orderItems, action.payload], selectedDish: null, customizations: initialState.customizations }
+      return {
+        ...state,
+        orderItems: [...state.orderItems, action.payload],
+        selectedDish: null,
+        customizations: initialState.customizations,
+      }
     case 'REMOVE_ITEM':
       return { ...state, orderItems: state.orderItems.filter((_, i) => i !== action.payload) }
     case 'SET_DELIVERY_DETAILS':
