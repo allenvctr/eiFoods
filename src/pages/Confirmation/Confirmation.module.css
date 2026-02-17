@@ -151,34 +151,71 @@
   background-color: #25D366;
   color: white;
   font-family: var(--font-display);
-  font-size: 0.95rem;
   font-weight: 600;
-  text-align: center;
-  text-decoration: none;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
   transition: all var(--transition);
+  text-align: center;
 }
 
 .btnWhatsapp:hover {
-  background-color: #1da851;
+  background-color: #20BA5A;
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .btnNovo {
   width: 100%;
   padding: var(--space-md);
   border-radius: var(--radius-full);
-  border: 2px solid var(--color-primary);
   background: transparent;
+  border: 2px solid var(--color-primary);
   color: var(--color-primary);
   font-family: var(--font-display);
-  font-size: 0.95rem;
   font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all var(--transition);
 }
 
 .btnNovo:hover {
   background-color: var(--color-primary-light);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: var(--space-xl);
+  }
+  
+  .titulo {
+    font-size: 1.5rem;
+  }
+  
+  .main {
+    padding: var(--space-lg) var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--space-lg);
+  }
+  
+  .icone {
+    font-size: 3rem;
+  }
+  
+  .titulo {
+    font-size: 1.3rem;
+  }
+  
+  .subtitulo,
+  .infoRow,
+  .resumoItem {
+    font-size: 0.85rem;
+  }
 }
 
 /* ── Responsivo ── */

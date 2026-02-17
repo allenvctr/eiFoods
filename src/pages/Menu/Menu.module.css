@@ -67,10 +67,42 @@
 
 .title {
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
   font-weight: 700;
   color: var(--color-text-primary);
   text-align: center;
+}
+
+.subtitulo {
+  text-align: center;
+  color: var(--color-text-secondary);
+  margin-top: calc(var(--space-sm) * -1);
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: var(--space-xl) var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: var(--space-lg) var(--space-md);
+  }
+  
+  .card {
+    padding: var(--space-md);
+  }
+  
+  .cardEmoji {
+    font-size: 2rem;
+  }
+  
+  .btnSelecionar {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
 }
 
 /* ── Cards ── */
@@ -87,14 +119,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-md);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border);
-  transition: box-shadow var(--transition), transform var(--transition);
+  transition: all var(--transition);
+  flex-wrap: wrap;
 }
 
 .card:hover {
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  border-color: var(--color-primary);
+}
+
+@media (max-width: 600px) {
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .btnSelecionar {
+    width: 100%;
+  }
 }
 
 .cardInfo {

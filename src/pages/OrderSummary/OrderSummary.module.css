@@ -60,7 +60,7 @@
 
 .title {
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
   font-weight: 700;
   color: var(--color-text-primary);
   text-align: center;
@@ -98,10 +98,30 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-md);
   padding: var(--space-md);
   background-color: var(--color-bg);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
+  transition: all var(--transition);
+  flex-wrap: wrap;
+}
+
+.item:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 600px) {
+  .item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .itemAcoes {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
 
 .itemInfo {
@@ -177,10 +197,12 @@
 .acoes {
   display: flex;
   gap: var(--space-md);
+  flex-wrap: wrap;
 }
 
 .btnAlterar {
   flex: 1;
+  min-width: 200px;
   padding: var(--space-md);
   border-radius: var(--radius-full);
   border: 2px solid var(--color-primary);
@@ -195,10 +217,12 @@
 
 .btnAlterar:hover {
   background-color: var(--color-primary-light);
+  transform: translateY(-2px);
 }
 
 .btnConfirmar {
   flex: 1;
+  min-width: 200px;
   padding: var(--space-md);
   border-radius: var(--radius-full);
   border: none;
@@ -214,6 +238,39 @@
 .btnConfirmar:hover {
   background-color: var(--color-primary-dark);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 600px) {
+  .acoes {
+    flex-direction: column;
+  }
+  
+  .btnAlterar,
+  .btnConfirmar {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .main {
+    padding: var(--space-lg) var(--space-md);
+  }
+  
+  .card {
+    padding: var(--space-md);
+  }
+  
+  .itemEmoji {
+    font-size: 1.5rem;
+  }
+  
+  .itemNome {
+    font-size: 0.9rem;
+  }
+  
+  .itemCustom {
+    font-size: 0.78rem;
+  }
 }
 
 
