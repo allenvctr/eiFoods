@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useOrder } from '../../context/useOrder'
 import Navbar from '../../components/Navbar/Navbar'
 import styles from './OrderSummary.module.css'
@@ -8,8 +9,13 @@ export default function OrderSummary() {
   const { state, dispatch } = useOrder()
   const { orderItems } = state
 
+  useEffect(() => {
+    if (orderItems.length === 0) {
+      navigate('/menu')
+    }
+  }, [orderItems.length, navigate])
+
   if (orderItems.length === 0) {
-    navigate('/menu')
     return null
   }
 

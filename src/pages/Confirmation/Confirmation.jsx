@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOrder } from '../../context/useOrder'
 import styles from './Confirmation.module.css'
@@ -8,9 +9,14 @@ export default function Confirmation() {
   const { state, dispatch } = useOrder()
   const { orderItems, deliveryDetails } = state
 
-  // Guard clause
+  // Guard clause with useEffect
+  useEffect(() => {
+    if (orderItems.length === 0) {
+      navigate('/menu')
+    }
+  }, [orderItems.length, navigate])
+
   if (orderItems.length === 0) {
-    navigate('/menu')
     return null
   }
 

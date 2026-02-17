@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useOrder } from '../../context/useOrder'
 import Navbar from '../../components/Navbar/Navbar'
 import { OPCOES_GRATUITAS, OPCOES_SAL, EXTRAS_PAGOS } from '../../data/menuData'
@@ -13,8 +14,13 @@ export default function Customize() {
   // Permite editar um item já existente
   const editIndex = location.state?.editIndex ?? null
 
+  useEffect(() => {
+    if (!selectedDish) {
+      navigate('/menu')
+    }
+  }, [selectedDish, navigate])
+
   if (!selectedDish) {
-    navigate('/menu')
     return null
   }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOrder } from "../../context/useOrder";
 import styles from "./Delivery.module.css";
@@ -17,9 +17,14 @@ export default function Delivery() {
 
   const [errors, setErrors] = useState({});
 
-  // Guard clause
+  // Guard clause with useEffect
+  useEffect(() => {
+    if (state.orderItems.length === 0) {
+      navigate("/menu");
+    }
+  }, [state.orderItems.length, navigate]);
+
   if (state.orderItems.length === 0) {
-    navigate("/menu");
     return null;
   }
 
