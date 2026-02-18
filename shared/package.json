@@ -1,0 +1,32 @@
+{
+  "name": "@eifoods/shared",
+  "version": "1.0.0",
+  "description": "Shared types, constants, validators and utilities for eiFoods application",
+  "type": "module",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./types": "./types.ts",
+    "./constants": "./constants.ts",
+    "./validators": "./validators.ts",
+    "./utils": "./utils.ts"
+  },
+  "keywords": [
+    "types",
+    "typescript",
+    "validators",
+    "utilities",
+    "shared"
+  ],
+  "author": "eiFoods Team",
+  "license": "MIT",
+  "files": [
+    "index.ts",
+    "types.ts",
+    "constants.ts",
+    "validators.ts",
+    "utils.ts",
+    "README.md"
+  ]
+}
