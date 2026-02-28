@@ -1,16 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@400;500&display=swap');
 
 :root {
-  --color-primary: #E8630A;
-  --color-primary-dark: #C4520A;
-  --color-primary-light: #FFF0E6;
-  --color-bg: #FAFAF8;
+  /* Verde — cor primária (do logo) */
+  --color-primary: #359420;
+  --color-primary-dark: #256B16;
+  --color-primary-light: #E8F5E3;
+  --color-primary-xlight: #F2FAF0;
+
+  /* Laranja — accent (do logo) */
+  --color-accent: #E85210;
+  --color-accent-dark: #C44008;
+  --color-accent-light: #FFF1E8;
+
+  --color-bg: #F6FAF4;
   --color-surface: #FFFFFF;
-  --color-border: #E8E4DF;
-  --color-text-primary: #1A1614;
-  --color-text-secondary: #6B6560;
-  --color-text-muted: #A09B96;
-  --color-success: #2D8A4E;
+  --color-border: #D8E8D0;
+  --color-text-primary: #182214;
+  --color-text-secondary: #4E6044;
+  --color-text-muted: #8A9E82;
+  --color-success: #359420;
   --color-error: #D63B3B;
   --font-display: 'Sora', sans-serif;
   --font-body: 'DM Sans', sans-serif;

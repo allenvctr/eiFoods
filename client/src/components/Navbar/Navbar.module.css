@@ -15,8 +15,6 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 1.2rem;
   cursor: pointer;
   transition: transform var(--transition);
   z-index: 101;
@@ -26,11 +24,10 @@
   transform: scale(1.02);
 }
 
-.logoText {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--color-primary);
+.logoImg {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
 }
 
 .rightSection {
@@ -179,21 +176,18 @@
   border-radius: var(--radius-full);
   width: 38px;
   height: 38px;
-  font-size: 1.1rem;
   cursor: pointer;
   transition: all var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--color-primary);
 }
 
 .cartBtn:hover {
   background-color: var(--color-primary);
+  color: white;
   transform: scale(1.05);
-}
-
-.cartBtn:hover {
-  filter: brightness(1.1);
 }
 
 /* ── Badge ── */

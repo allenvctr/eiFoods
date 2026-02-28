@@ -18,18 +18,20 @@ export default function Menu() {
       <Navbar />
       <main className={styles.main}>
         <h1 className={styles.title}>Menu do dia</h1>
-        <p className={styles.subtitulo}>Escolha o seu prato favorito 👇</p>
+        <p className={styles.subtitulo}>Escolha o seu prato e personalize ao seu gosto</p>
 
         <div className={styles.lista}>
           {MENU_DO_DIA.map((prato) => (
             <div key={prato.id} className={styles.card}>
-              <div className={styles.cardInfo}>
-                <span className={styles.cardEmoji}>{prato.emoji}</span>
-                <div className={styles.cardTexto}>
-                  <p className={styles.cardNome}>{prato.nome}</p>
-                  <p className={styles.cardDescricao}>{prato.descricao}</p>
-                  <p className={styles.cardPreco}>{prato.preco} MZN</p>
-                </div>
+              <img
+                src={prato.imagem}
+                alt={prato.nome}
+                className={styles.cardImagem}
+              />
+              <div className={styles.cardTexto}>
+                <p className={styles.cardNome}>{prato.nome}</p>
+                <p className={styles.cardDescricao}>{prato.descricao}</p>
+                <p className={styles.cardPreco}>{prato.preco} MZN</p>
               </div>
               <button
                 className={styles.btnSelecionar}

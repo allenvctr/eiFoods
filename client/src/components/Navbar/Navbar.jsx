@@ -9,16 +9,9 @@ export default function Navbar() {
   const totalItens = state.orderItems.length
   const [menuAberto, setMenuAberto] = useState(false)
 
-  // Prevenir scroll quando o menu está aberto
   useEffect(() => {
-    if (menuAberto) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
+    document.body.style.overflow = menuAberto ? 'hidden' : 'unset'
+    return () => { document.body.style.overflow = 'unset' }
   }, [menuAberto])
 
   function handleNavegar(rota) {
@@ -30,19 +23,16 @@ export default function Navbar() {
     <>
       <header className={styles.header}>
         <div className={styles.logo} onClick={() => handleNavegar('/')}>
-          <span>🍽️</span>
-          <span className={styles.logoText}>eiFoods</span>
+          <img src="/logo.jpg" alt="Marmita Fresca" className={styles.logoImg} />
         </div>
 
-        {/* Nav Desktop */}
         <nav className={styles.navDesktop}>
           <span onClick={() => navigate('/')}>Início</span>
           <span onClick={() => navigate('/menu')}>Menu</span>
-          <span onClick={() => navigate('/confirmation')}>Contactos</span>
+          <span onClick={() => navigate('/sorteio')}>Sorteio</span>
         </nav>
 
         <div className={styles.rightSection}>
-          {/* Botão Hamburguer */}
           <button
             className={`${styles.hamburger} ${menuAberto ? styles.hamburgerAberto : ''}`}
             onClick={() => setMenuAberto(!menuAberto)}
@@ -53,12 +43,15 @@ export default function Navbar() {
             <span></span>
           </button>
 
-          {/* Carrinho */}
           <button
             className={styles.cartBtn}
             onClick={() => handleNavegar('/order-summary')}
+            aria-label="Ver carrinho"
           >
-            🛒
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
             {totalItens > 0 && (
               <span className={styles.badge}>{totalItens}</span>
             )}
@@ -66,17 +59,16 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Nav Mobile */}
       {menuAberto && (
         <>
           <div className={styles.overlay} onClick={() => setMenuAberto(false)} />
           <nav className={styles.navMobile}>
-            <span onClick={() => handleNavegar('/')}>🏠 Início</span>
-            <span onClick={() => handleNavegar('/menu')}>🍽️ Menu</span>
-            <span onClick={() => handleNavegar('/confirmation')}>📞 Contactos</span>
+            <span onClick={() => handleNavegar('/')}>Início</span>
+            <span onClick={() => handleNavegar('/menu')}>Menu</span>
+            <span onClick={() => handleNavegar('/sorteio')}>Sorteio</span>
             {totalItens > 0 && (
               <span onClick={() => handleNavegar('/order-summary')}>
-                🛒 Carrinho ({totalItens})
+                Carrinho ({totalItens})
               </span>
             )}
           </nav>
