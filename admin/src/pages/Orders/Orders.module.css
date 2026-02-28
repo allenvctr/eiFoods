@@ -104,7 +104,10 @@
 }
 
 .infoLabel {
-  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  color: var(--ui-text-3, #9ca3af);
+  flex-shrink: 0;
 }
 
 .infoValue {
@@ -138,8 +141,12 @@
   padding-top: 0;
 }
 
-.itemEmoji {
-  font-size: 1.5rem;
+.itemImagem {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .itemDetails {
@@ -189,7 +196,8 @@
 }
 
 .emptyIcon {
-  font-size: 4rem;
+  display: flex;
+  justify-content: center;
   margin-bottom: 1rem;
 }
 

@@ -1,14 +1,16 @@
 .app {
   display: flex;
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--ui-bg);
 }
 
 .main {
   flex: 1;
-  margin-left: 280px;
+  margin-left: 248px;
   padding: 2rem;
   overflow-y: auto;
+  background-color: var(--ui-bg);
+  min-height: 100vh;
 }
 
 @media (max-width: 1024px) {

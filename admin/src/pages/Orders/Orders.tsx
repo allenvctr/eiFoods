@@ -6,6 +6,47 @@ import type { Order } from '../../types/admin.types'
 import type { OrderStatus } from '../../types/admin.types'
 import styles from './Orders.module.css'
 
+function IcoUser() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </svg>
+  )
+}
+
+function IcoBuilding() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>
+    </svg>
+  )
+}
+
+function IcoPin() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+    </svg>
+  )
+}
+
+function IcoPhone() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.52 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.72a16 16 0 0 0 6 6l1.21-1.21a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+    </svg>
+  )
+}
+
+function IcoCaixaVazia() {
+  return (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--ui-text-3)' }}>
+      <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/>
+      <polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/>
+    </svg>
+  )
+}
+
 export function Orders() {
   const { state, dispatch } = useAdmin()
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | 'all'>('all')
@@ -92,19 +133,19 @@ export function Orders() {
             <div className={styles.orderBody}>
               <div className={styles.orderInfo}>
                 <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>👤</span>
+                  <span className={styles.infoLabel}><IcoUser /></span>
                   <span className={styles.infoValue}>{order.deliveryDetails.name}</span>
                 </div>
                 <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>🏢</span>
+                  <span className={styles.infoLabel}><IcoBuilding /></span>
                   <span className={styles.infoValue}>{order.deliveryDetails.company}</span>
                 </div>
                 <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>📍</span>
+                  <span className={styles.infoLabel}><IcoPin /></span>
                   <span className={styles.infoValue}>{order.deliveryDetails.location}</span>
                 </div>
                 <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>📞</span>
+                  <span className={styles.infoLabel}><IcoPhone /></span>
                   <span className={styles.infoValue}>{order.deliveryDetails.contact}</span>
                 </div>
               </div>
@@ -113,7 +154,7 @@ export function Orders() {
                 <div className={styles.itemsTitle}>Itens ({order.items.length})</div>
                 {order.items.map((item, index) => (
                   <div key={index} className={styles.orderItem}>
-                    <span className={styles.itemEmoji}>{item.prato.emoji}</span>
+                    <img src={item.prato.imagem} alt={item.prato.nome} className={styles.itemImagem} />
                     <div className={styles.itemDetails}>
                       <div className={styles.itemName}>{item.prato.nome}</div>
                       {getCustomizationSummary(item.customizations) && (
@@ -150,7 +191,7 @@ export function Orders() {
       
       {filteredOrders.length === 0 && (
         <Card className={styles.emptyState}>
-          <div className={styles.emptyIcon}>📦</div>
+          <div className={styles.emptyIcon}><IcoCaixaVazia /></div>
           <h3 className={styles.emptyTitle}>Nenhum pedido encontrado</h3>
           <p className={styles.emptyText}>
             {selectedStatus === 'all' 

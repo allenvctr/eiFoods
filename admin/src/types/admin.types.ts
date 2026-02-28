@@ -52,7 +52,7 @@ export interface PopularDish {
 export interface DishFormData {
   nome: string
   preco: number
-  emoji: string
+  imagem: string
   descricao: string
   disponivel?: boolean
 }

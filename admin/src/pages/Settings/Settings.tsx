@@ -40,7 +40,7 @@ export function Settings() {
       <div className={styles.settingsGrid}>
         {/* Informações Gerais */}
         <Card>
-          <h2 className={styles.sectionTitle}>📋 Informações Gerais</h2>
+          <h2 className={styles.sectionTitle}>Informações Gerais</h2>
           
           <div className={styles.form}>
             <div className={styles.formGroup}>
@@ -77,7 +77,7 @@ export function Settings() {
         
         {/* Configurações de Entrega */}
         <Card>
-          <h2 className={styles.sectionTitle}>🚚 Entrega</h2>
+          <h2 className={styles.sectionTitle}>Entrega</h2>
           
           <div className={styles.form}>
             <div className={styles.formGroup}>
@@ -112,7 +112,7 @@ export function Settings() {
         
         {/* Estatísticas */}
         <Card>
-          <h2 className={styles.sectionTitle}>📊 Estatísticas</h2>
+          <h2 className={styles.sectionTitle}>Estatísticas</h2>
           
           <div className={styles.stats}>
             <div className={styles.statItem}>
@@ -129,14 +129,14 @@ export function Settings() {
             </div>
             <div className={styles.statItem}>
               <div className={styles.statLabel}>Avaliação Média</div>
-              <div className={styles.statValue}>⭐ 4.8</div>
+              <div className={styles.statValue}>4.8 / 5</div>
             </div>
           </div>
         </Card>
         
         {/* Sobre o Sistema */}
         <Card>
-          <h2 className={styles.sectionTitle}>ℹ️ Sobre o Sistema</h2>
+          <h2 className={styles.sectionTitle}>Sobre o Sistema</h2>
           
           <div className={styles.about}>
             <div className={styles.aboutRow}>
@@ -162,7 +162,7 @@ export function Settings() {
           onClick={handleSave}
           disabled={isSaving}
         >
-          {isSaving ? '💾 Salvando...' : '💾 Salvar Configurações'}
+          {isSaving ? 'Salvando...' : 'Salvar Configurações'}
         </Button>
       </div>
     </div>

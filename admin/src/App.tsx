@@ -6,6 +6,8 @@ import { Dishes } from './pages/Dishes/Dishes'
 import { Orders } from './pages/Orders/Orders'
 import { Extras } from './pages/Extras/Extras'
 import { Settings } from './pages/Settings/Settings'
+import { PratoDoDia } from './pages/PratoDoDia/PratoDoDia'
+import { SorteioAdmin } from './pages/SorteioAdmin/SorteioAdmin'
 import './App.css'
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
               <Route path="/orders" element={<Orders />} />
               <Route path="/extras" element={<Extras />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/prato-do-dia" element={<PratoDoDia />} />
+              <Route path="/sorteio" element={<SorteioAdmin />} />
             </Routes>
           </main>
         </div>

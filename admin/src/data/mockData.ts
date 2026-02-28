@@ -14,42 +14,42 @@ export const mockPratos: Prato[] = [
     id: 1,
     nome: 'Arroz + Frango Assado + Batata',
     preco: 250,
-    emoji: '🍗',
+    imagem: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c4?auto=format&fit=crop&w=400&q=80',
     descricao: 'Frango assado no forno com arroz branco e batata frita crocante'
   },
   {
     id: 2,
     nome: 'Arroz + Frango Grelhado + Salada',
     preco: 280,
-    emoji: '🔥',
+    imagem: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80',
     descricao: 'Frango grelhado suculento com arroz e salada fresca'
   },
   {
     id: 3,
     nome: 'Massa + Frango + Legumes',
     preco: 300,
-    emoji: '🍝',
+    imagem: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80',
     descricao: 'Massa italiana com frango grelhado e legumes salteados'
   },
   {
     id: 4,
     nome: 'Arroz de Marisco',
     preco: 450,
-    emoji: '🦐',
+    imagem: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?auto=format&fit=crop&w=400&q=80',
     descricao: 'Arroz de marisco tradicional moçambicano com camarão, lula e caranguejo'
   },
   {
     id: 5,
     nome: 'Xima + Frango + Molho de Amendoim',
     preco: 220,
-    emoji: '🥘',
+    imagem: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=400&q=80',
     descricao: 'Xima de milho com frango e delicioso molho de amendoim'
   },
   {
     id: 6,
     nome: 'Matapa com Caril',
     preco: 350,
-    emoji: '🥬',
+    imagem: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80',
     descricao: 'Matapa tradicional com caril de camarão'
   }
 ]

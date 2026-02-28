@@ -1,0 +1,490 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xl);
+}
+
+.btnAddParticipante {
+  background-color: var(--brand-accent);
+  color: white;
+  border: none;
+  padding: 9px 20px;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btnAddParticipante:hover {
+  background-color: var(--brand-accent-dark);
+  transform: translateY(-1px);
+}
+
+/* ── Form inline ── */
+.formCard {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+  box-shadow: var(--shadow-sm);
+  animation: slideDown 0.25s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.formTitulo {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ui-text);
+}
+
+.formCampos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-md);
+}
+
+.campo { display: flex; flex-direction: column; gap: 5px; }
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ui-text-2);
+}
+
+.input {
+  padding: 8px 11px;
+  border: 1.5px solid var(--ui-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--ui-text);
+  background: var(--ui-bg);
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.input:focus { border-color: var(--brand-primary); background: white; }
+
+.formAcoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-sm);
+}
+
+.btnCancelar {
+  background: none;
+  border: 1.5px solid var(--ui-border);
+  color: var(--ui-text-2);
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btnCancelar:hover { border-color: var(--ui-text-2); }
+
+.btnConfirmar {
+  background-color: var(--brand-primary);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btnConfirmar:hover { background-color: var(--brand-primary-dark); }
+
+/* ── Layout ── */
+.layout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: var(--sp-xl);
+  align-items: start;
+}
+
+/* ── Stats ── */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-md);
+}
+
+.statCard {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--shadow-sm);
+}
+
+.statNum {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.72rem;
+  color: var(--ui-text-3);
+  font-weight: 500;
+}
+
+/* ── Coluna esquerda ── */
+.colunaEsquerda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+  position: sticky;
+  top: 24px;
+}
+
+/* ── Máquina ── */
+.maquinaCard {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.maquinaLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ui-text-3);
+}
+
+.tambor {
+  width: 100%;
+  min-height: 110px;
+  border-radius: var(--radius-md);
+  background: var(--brand-primary-xlight);
+  border: 2px solid var(--ui-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--sp-lg);
+  transition: all 0.2s ease;
+}
+
+.tamborAtivo {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary-light);
+  animation: pulso 0.4s ease infinite alternate;
+}
+
+@keyframes pulso {
+  from { box-shadow: 0 0 0 0 rgba(53,148,32,0.12); }
+  to   { box-shadow: 0 0 0 8px rgba(53,148,32,0.12); }
+}
+
+.tamborResultado {
+  border-color: var(--brand-accent);
+  background: var(--brand-accent-light);
+  animation: revelacao 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes revelacao {
+  from { transform: scale(0.94); opacity: 0.4; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.tamborPlaceholder {
+  font-size: 0.8rem;
+  color: var(--ui-text-3);
+  text-align: center;
+}
+
+.tamborRef {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--brand-primary);
+  letter-spacing: 0.05em;
+}
+
+.tamborNome {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ui-text);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.tamborEmpresa {
+  font-size: 0.8rem;
+  color: var(--ui-text-2);
+}
+
+.btnSortear {
+  background-color: var(--brand-accent);
+  color: white;
+  border: none;
+  padding: 13px 0;
+  border-radius: var(--radius-full);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  width: 100%;
+}
+
+.btnSortear:hover:not(:disabled) {
+  background-color: var(--brand-accent-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(232,82,16,0.28);
+}
+
+.btnSortear:disabled {
+  background-color: var(--ui-text-3);
+  cursor: not-allowed;
+}
+
+.tamborAcoes { width: 100%; }
+
+.btnReiniciar {
+  width: 100%;
+  background: none;
+  border: 1.5px solid var(--ui-border);
+  color: var(--ui-text-2);
+  padding: 11px 0;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btnReiniciar:hover {
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+  background: var(--brand-primary-light);
+}
+
+/* ── Vencedor ── */
+.vencedorCard {
+  background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-accent-dark) 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.vencedorIcone { color: #FFD700; flex-shrink: 0; }
+
+.vencedorInfo { flex: 1; }
+
+.vencedorLabel {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.70);
+  margin-bottom: 2px;
+}
+
+.vencedorNome {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.1;
+}
+
+.vencedorDetalhe {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.72);
+  margin-top: 3px;
+}
+
+/* ── Histórico ── */
+.historicoCard {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.historicoTitulo {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ui-text);
+  padding: var(--sp-md) var(--sp-lg);
+  border-bottom: 1px solid var(--ui-border);
+  background: var(--brand-primary-xlight);
+}
+
+.historicoTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.historicoTable th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ui-text-3);
+  background: var(--ui-bg);
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.historicoTable td { padding: 10px 12px; border-bottom: 1px solid var(--ui-border); }
+.historicoTable tr:last-child td { border-bottom: none; }
+
+/* ── Coluna direita — tabela ── */
+.colunaDireita { min-width: 0; }
+
+.listaCard {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.listaHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-md) var(--sp-lg);
+  border-bottom: 1px solid var(--ui-border);
+  background: var(--brand-primary-xlight);
+}
+
+.listaTitulo {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ui-text);
+}
+
+.listaContagem {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  background: var(--brand-primary-light);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.825rem;
+}
+
+.tabela th {
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 0.63rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ui-text-3);
+  background: var(--ui-bg);
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.tabela td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--ui-border);
+  color: var(--ui-text);
+  transition: background 0.15s ease;
+}
+
+.tabela tr:last-child td { border-bottom: none; }
+
+.tabela tr:hover td { background: var(--brand-primary-xlight); }
+
+.trAtivo td { background: var(--brand-primary-light) !important; }
+
+.trVencedor td {
+  background: linear-gradient(90deg, var(--brand-accent-light) 0%, white 100%) !important;
+  border-left: 3px solid var(--brand-accent);
+}
+
+.tdRef { font-weight: 600; color: var(--ui-text-3); font-size: 0.75rem; }
+.tdNome { font-weight: 600; }
+.tdEmpresa { color: var(--ui-text-2); }
+.tdData { color: var(--ui-text-3); font-size: 0.75rem; white-space: nowrap; }
+.tdPrato { color: var(--ui-text-2); }
+
+.vencedorTag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: white;
+  background: var(--brand-accent);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.btnRemover {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--ui-border);
+  background: none;
+  color: var(--ui-text-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.btnRemover:hover {
+  background: #FEF2F2;
+  border-color: #EF4444;
+  color: #EF4444;
+}
+
+/* ── Responsivo ── */
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; }
+  .colunaEsquerda { position: static; }
+}
+
+@media (max-width: 640px) {
+  .formCampos { grid-template-columns: 1fr; }
+  .statsRow { grid-template-columns: 1fr 1fr; }
+}

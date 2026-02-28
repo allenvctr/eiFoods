@@ -89,8 +89,12 @@
   text-align: center;
 }
 
-.dishEmoji {
-  font-size: 2rem;
+.dishImagem {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .dishInfo {

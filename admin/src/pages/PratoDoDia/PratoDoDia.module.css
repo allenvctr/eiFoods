@@ -1,0 +1,396 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xl);
+}
+
+.headerAcoes {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.statusBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
+.publicado {
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary-dark);
+}
+
+.rascunho {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.btnPublicar {
+  background-color: var(--brand-accent);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btnPublicar:hover {
+  background-color: var(--brand-accent-dark);
+  transform: translateY(-1px);
+}
+
+/* ── Layout ── */
+.layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: var(--sp-xl);
+  align-items: start;
+}
+
+/* ── Preview ── */
+.preview {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.previewLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ui-text-3);
+}
+
+.previewCard {
+  background: var(--ui-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--ui-border);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.previewImagemWrap {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+
+.previewImagem {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.previewImagemVazia {
+  width: 100%;
+  height: 100%;
+  background-color: var(--brand-primary-xlight);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--ui-text-3);
+}
+
+.previewBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background-color: var(--brand-primary);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.previewRascunhoBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: #F59E0B;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+}
+
+.previewInfo {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.previewNome {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ui-text);
+  line-height: 1.2;
+}
+
+.previewDescricao {
+  font-size: 0.83rem;
+  color: var(--ui-text-2);
+  line-height: 1.5;
+}
+
+.previewRodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--ui-border);
+  margin-top: 4px;
+}
+
+.previewPreco {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+}
+
+.previewHora {
+  font-size: 0.75rem;
+  color: var(--ui-text-3);
+}
+
+/* ── Form ── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+}
+
+.secao {
+  background: var(--ui-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--ui-border);
+  padding: var(--sp-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.secaoTitulo {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ui-text);
+  padding-bottom: var(--sp-sm);
+  border-bottom: 1px solid var(--ui-border);
+}
+
+/* ── Prato grid ── */
+.pratoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.pratoOpcao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--ui-border);
+  background: var(--ui-bg);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition);
+}
+
+.pratoOpcao:hover {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary-xlight);
+}
+
+.pratoOpcaoAtivo {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary-light);
+}
+
+.pratoOpcaoNome {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ui-text);
+  line-height: 1.2;
+}
+
+.pratoOpcaoPreco {
+  font-size: 0.72rem;
+  color: var(--brand-primary);
+  font-weight: 600;
+}
+
+/* ── Campos ── */
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.campoRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-md);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ui-text-2);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid var(--ui-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--ui-text);
+  background: var(--ui-bg);
+  transition: border-color var(--transition);
+  outline: none;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--brand-primary);
+  background: white;
+}
+
+.textarea { resize: vertical; min-height: 80px; }
+
+/* ── Imagens ── */
+.imagensSugeridas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.imagemOpcao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 2px solid var(--ui-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition);
+  padding: 0 0 6px;
+}
+
+.imagemOpcao:hover {
+  border-color: var(--brand-primary);
+}
+
+.imagemOpcaoAtiva {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px var(--brand-primary-light);
+}
+
+.imagemThumb {
+  width: 100%;
+  height: 70px;
+  object-fit: cover;
+}
+
+.imagemLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ui-text-2);
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.inputRow .input { flex: 1; }
+
+.btnAplicar {
+  background-color: var(--brand-primary);
+  color: white;
+  border: none;
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.btnAplicar:hover {
+  background-color: var(--brand-primary-dark);
+}
+
+/* ── Guardar ── */
+.acoes {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-md);
+}
+
+.feedbackGuardado {
+  font-size: 0.83rem;
+  color: var(--brand-primary);
+  font-weight: 600;
+}
+
+.btnGuardar {
+  background-color: var(--brand-accent);
+  color: white;
+  border: none;
+  padding: 11px 28px;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btnGuardar:hover {
+  background-color: var(--brand-accent-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(232,82,16,0.25);
+}
+
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; }
+  .preview { position: static; }
+}
+
+@media (max-width: 640px) {
+  .pratoGrid { grid-template-columns: 1fr; }
+  .imagensSugeridas { grid-template-columns: repeat(2, 1fr); }
+  .campoRow { grid-template-columns: 1fr; }
+}
