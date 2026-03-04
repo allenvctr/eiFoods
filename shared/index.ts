@@ -5,6 +5,7 @@
 
 // Types
 export type {
+  ImagemPrato,
   Prato,
   Extra,
   OpcaoGratuita,
@@ -18,7 +19,13 @@ export type {
   OrderContextType,
   NonNullable,
   PartialDeep,
+  DiaSemana,
+  DiaAgendado,
+  AgendaSemanal,
+  OrderStatus,
 } from './types'
+
+export { DIAS_SEMANA } from './types'
 
 // Constants
 export {

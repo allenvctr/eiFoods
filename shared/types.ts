@@ -8,23 +8,51 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
+ * Imagem de um prato armazenada no Cloudinary
+ */
+export interface ImagemPrato {
+  url: string
+  publicId: string
+}
+
+/**
  * Representa um prato disponível no menu do dia
  */
 export interface Prato {
-  id: number
+  /** MongoDB ObjectId como string */
+  _id?: string
+  /** @deprecated usar _id. Mantido para compatibilidade com mock data. */
+  id?: number | string
   nome: string
   preco: number
-  emoji: string
+  /** Imagem armazenada no Cloudinary */
+  imagem: ImagemPrato
+  /** @deprecated usar imagem.url */
+  emoji?: string
   descricao: string
+  /** Flag: prato está disponível no menu de hoje? */
+  disponivel?: boolean
+  /** IDs dos extras exclusivos deste prato */
+  extrasProprios?: string[]
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 /**
  * Representa um extra pago que pode ser adicionado a um prato
  */
 export interface Extra {
-  id: string
+  /** MongoDB ObjectId como string */
+  _id?: string
+  /** @deprecated usar _id */
+  id?: string
   nome: string
   preco: number
+  /** true = disponível para todos os pratos; false = exclusivo de pratos específicos */
+  global?: boolean
+  ativo?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -50,7 +78,10 @@ export type OpcaoSal = 'Sem Sal' | 'Pouco Sal' | 'Normal'
  */
 export interface Customizacoes {
   free: OpcaoGratuita[]
+  /** Extra pago selecionado — null se nenhum (UI: selecção única) */
   paid: Extra | null
+  /** Lista de extras pagos (para envio à API — suporta múltiplos) */
+  paidExtras?: Extra[]
   salt: OpcaoSal
 }
 
@@ -101,6 +132,33 @@ export type OrderAction =
   | { type: 'REMOVE_ITEM'; payload: number }
   | { type: 'SET_DELIVERY_DETAILS'; payload: Partial<DeliveryDetails> }
   | { type: 'RESET_ORDER' }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Agenda Semanal / Prato do Dia
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Dias de serviço (2ª a 6ª) */
+export type DiaSemana = 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta'
+
+export const DIAS_SEMANA: DiaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta']
+
+/** Entrada de um dia no agendamento semanal */
+export interface DiaAgendado {
+  diaSemana: DiaSemana
+  prato: Prato | null
+}
+
+/** Documento de agendamento semanal (singleton no servidor) */
+export interface AgendaSemanal {
+  semana: DiaAgendado[]
+  updatedAt?: Date | string
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Encomendas
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Configuração
