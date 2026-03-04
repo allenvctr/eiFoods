@@ -4,10 +4,10 @@ import morgan from 'morgan'
 import mongoose from 'mongoose'
 import 'dotenv/config'
 
-import pratosRouter from './routes/pratos'
-import extrasRouter from './routes/extras'
-import pratoDoDiaRouter from './routes/pratoDoDia'
-import ordersRouter from './routes/orders'
+import pratosRouter from './routes/pratos.ts'
+import extrasRouter from './routes/extras.ts'
+import pratoDoDiaRouter from './routes/pratoDoDia.ts'
+import ordersRouter from './routes/orders.ts'
 
 const app = express()
 const PORT = process.env['PORT'] ?? 3000
