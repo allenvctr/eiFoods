@@ -4,10 +4,12 @@ import morgan from 'morgan'
 import mongoose from 'mongoose'
 import 'dotenv/config'
 
+import swaggerUi from 'swagger-ui-express'
 import pratosRouter from './routes/pratos.ts'
 import extrasRouter from './routes/extras.ts'
 import pratoDoDiaRouter from './routes/pratoDoDia.ts'
 import ordersRouter from './routes/orders.ts'
+import swaggerSpec from './lib/swagger.ts'
 
 const app = express()
 const PORT = process.env['PORT'] ?? 3000
@@ -46,6 +48,11 @@ app.use('/api/pratos', pratosRouter)
 app.use('/api/extras', extrasRouter)
 app.use('/api/prato-do-dia', pratoDoDiaRouter)
 app.use('/api/orders', ordersRouter)
+
+// ── API Docs (Swagger UI) ────────────────────────────────────────────────────
+
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.get('/api/docs.json', (_req, res) => res.json(swaggerSpec))
 
 // ── 404 ─────────────────────────────────────────────────────────────────────
 
