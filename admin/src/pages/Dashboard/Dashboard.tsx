@@ -130,9 +130,9 @@ export function Dashboard() {
         <h2 className={styles.cardTitle}>Pedidos Recentes</h2>
         <div className={styles.recentOrders}>
           {state.orders.slice(0, 5).map(order => (
-            <div key={order.id} className={styles.orderRow}>
+            <div key={order._id} className={styles.orderRow}>
               <div className={styles.orderInfo}>
-                <div className={styles.orderId}>{order.id}</div>
+                <div className={styles.orderId}>#{order._id.slice(-6).toUpperCase()}</div>
                 <div className={styles.orderCustomer}>{order.deliveryDetails.name}</div>
               </div>
               <div className={styles.orderMeta}>

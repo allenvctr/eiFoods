@@ -97,7 +97,7 @@ export default function OrderSummary() {
                     <div className={styles.itemImagemWrap}>
                       {item.prato.imagem ? (
                         <img
-                          src={item.prato.imagem}
+                          src={item.prato.imagem?.url ?? item.prato.imagem}
                           alt={item.prato.nome}
                           className={styles.itemImagem}
                         />

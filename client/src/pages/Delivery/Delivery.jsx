@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useOrder } from "../../context/useOrder";
 import styles from "./Delivery.module.css";
 import Navbar from "../../components/Navbar/Navbar";
+import { ordersApi } from "../../api";
 
 export default function Delivery() {
   const navigate = useNavigate();
@@ -46,11 +47,28 @@ export default function Delivery() {
     return novosErros;
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const novosErros = validar();
     if (Object.keys(novosErros).length > 0) {
       setErrors(novosErros);
       return;
+    }
+    try {
+      const payload = {
+        items: state.orderItems.map(item => ({
+          pratoId: item.prato._id,
+          customizations: {
+            free: item.customizations.free ?? [],
+            salt: item.customizations.salt ?? 'Normal',
+          },
+          extraIds: item.customizations.paid?._id ? [item.customizations.paid._id] : [],
+        })),
+        deliveryDetails: form,
+      };
+      const order = await ordersApi.create(payload);
+      dispatch({ type: "SET_ORDER_ID", payload: order._id });
+    } catch (e) {
+      console.error("Erro ao submeter pedido:", e);
     }
     dispatch({ type: "SET_DELIVERY_DETAILS", payload: form });
     navigate("/confirmation");

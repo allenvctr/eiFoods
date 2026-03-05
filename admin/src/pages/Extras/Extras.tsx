@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAdmin } from '../../context/AdminContext'
 import { Header, Card, Button } from '../../components'
 import { formatPrice } from '../../../../shared/utils'
-import type { Extra } from '../../../../shared/types'
+import type { ApiExtra } from '../../lib/api'
 import type { ExtraFormData } from '../../types/admin.types'
 import styles from './Extras.module.css'
 
@@ -41,30 +41,45 @@ function IcoExtrasVazio() {
 }
 
 export function Extras() {
-  const { state, dispatch } = useAdmin()
+  const { state, createExtra, updateExtra, deleteExtra } = useAdmin()
   const [showModal, setShowModal] = useState(false)
-  const [editingExtra, setEditingExtra] = useState<Extra | null>(null)
-  
+  const [editingExtra, setEditingExtra] = useState<ApiExtra | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+
   const handleAddExtra = () => {
     setEditingExtra(null)
     setShowModal(true)
   }
-  
-  const handleEditExtra = (extra: Extra) => {
+
+  const handleEditExtra = (extra: ApiExtra) => {
     setEditingExtra(extra)
     setShowModal(true)
   }
-  
-  const handleDeleteExtra = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este extra?')) {
-      dispatch({ type: 'DELETE_EXTRA', payload: id })
+
+  const handleDeleteExtra = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este extra?')) return
+    try {
+      await deleteExtra(id)
+    } catch (e) {
+      setActionError((e as Error).message)
     }
   }
-  
+
+  const handleSave = async (data: ExtraFormData) => {
+    if (editingExtra) {
+      await updateExtra(editingExtra._id, data)
+    } else {
+      await createExtra(data)
+    }
+    setShowModal(false)
+  }
+
+  if (state.loading) return <div style={{ padding: 32 }}>A carregar...</div>
+
   return (
     <div className={styles.extras}>
-      <Header 
-        title="Gestão de Extras" 
+      <Header
+        title="Gestão de Extras"
         subtitle={`${state.extras.length} extras disponíveis`}
         actions={
           <Button onClick={handleAddExtra}>
@@ -72,17 +87,35 @@ export function Extras() {
           </Button>
         }
       />
-      
+
+      {actionError && (
+        <div style={{ marginBottom: 12, padding: '10px 14px', background: 'var(--ui-danger-soft, #fdecea)', borderRadius: 8, color: 'var(--ui-danger, #c62828)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+          {actionError}
+          <button onClick={() => setActionError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 16 }}>×</button>
+        </div>
+      )}
+
       <div className={styles.extrasGrid}>
         {state.extras.map(extra => (
-          <Card key={extra.id} className={styles.extraCard} hover>
+          <Card key={extra._id} className={styles.extraCard} hover>
             <div className={styles.extraHeader}>
               <h3 className={styles.extraName}>{extra.nome}</h3>
               <div className={styles.extraPrice}>{formatPrice(extra.preco)}</div>
             </div>
+            <div style={{ marginBottom: 8 }}>
+              <span style={{
+                fontSize: 11,
+                padding: '2px 8px',
+                borderRadius: 10,
+                background: extra.global ? 'var(--ui-success-soft, #e8f5e9)' : 'var(--ui-info-soft, #e3f2fd)',
+                color: extra.global ? 'var(--ui-success, #2e7d32)' : 'var(--ui-info, #1565c0)',
+              }}>
+                {extra.global ? 'Global' : 'Exclusivo'}
+              </span>
+            </div>
             <div className={styles.extraActions}>
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 size="small"
                 fullWidth
                 onClick={() => handleEditExtra(extra)}
@@ -93,7 +126,7 @@ export function Extras() {
                 variant="danger"
                 size="small"
                 fullWidth
-                onClick={() => handleDeleteExtra(extra.id)}
+                onClick={() => handleDeleteExtra(extra._id)}
               >
                 <IcoLixo /> Excluir
               </Button>
@@ -101,69 +134,66 @@ export function Extras() {
           </Card>
         ))}
       </div>
-      
+
       {state.extras.length === 0 && (
-         <Card className={styles.emptyState}>
+        <Card className={styles.emptyState}>
           <div className={styles.emptyIcon}><IcoExtrasVazio /></div>
           <h3 className={styles.emptyTitle}>Nenhum extra cadastrado</h3>
           <p className={styles.emptyText}>Adicione extras que os clientes podem incluir nos pedidos</p>
         </Card>
       )}
-      
+
       {showModal && (
         <ExtraModal
           extra={editingExtra}
           onClose={() => setShowModal(false)}
-          onSave={(extraData) => {
-            if (editingExtra) {
-              dispatch({
-                type: 'UPDATE_EXTRA',
-                payload: { ...editingExtra, ...extraData }
-              })
-            } else {
-              const newId = Date.now().toString()
-              dispatch({
-                type: 'ADD_EXTRA',
-                payload: { id: newId, ...extraData } as Extra
-              })
-            }
-            setShowModal(false)
-          }}
+          onSave={handleSave}
         />
       )}
     </div>
   )
 }
 
-// Modal de formulário
 interface ExtraModalProps {
-  extra: Extra | null
+  extra: ApiExtra | null
   onClose: () => void
-  onSave: (data: ExtraFormData) => void
+  onSave: (data: ExtraFormData) => Promise<void>
 }
 
 function ExtraModal({ extra, onClose, onSave }: ExtraModalProps) {
   const [formData, setFormData] = useState<ExtraFormData>({
-    nome: extra?.nome || '',
-    preco: extra?.preco || 0
+    nome: extra?.nome ?? '',
+    preco: extra?.preco ?? 0,
+    global: extra?.global ?? true,
   })
-  
-  const handleSubmit = (e: React.FormEvent) => {
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.nome || !formData.preco) {
-      alert('Preencha todos os campos obrigatórios')
+      setError('Preencha todos os campos obrigatórios')
       return
     }
-    onSave(formData)
+    setSaving(true)
+    setError(null)
+    try {
+      await onSave(formData)
+    } catch (e) {
+      setError((e as Error).message)
+      setSaving(false)
+    }
   }
-  
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h2 className={styles.modalTitle}>
           {extra ? 'Editar Extra' : 'Novo Extra'}
         </h2>
-        
+
+        {error && <p style={{ color: 'var(--ui-danger)', marginBottom: 12, fontSize: 13 }}>{error}</p>}
+
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label className={styles.label}>Nome do Extra *</label>
@@ -176,7 +206,7 @@ function ExtraModal({ extra, onClose, onSave }: ExtraModalProps) {
               required
             />
           </div>
-          
+
           <div className={styles.formGroup}>
             <label className={styles.label}>Preço (MZN) *</label>
             <input
@@ -189,13 +219,26 @@ function ExtraModal({ extra, onClose, onSave }: ExtraModalProps) {
               required
             />
           </div>
-          
+
+          <div className={styles.formGroup}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={formData.global}
+                onChange={(e) => setFormData({ ...formData, global: e.target.checked })}
+              />
+              <span className={styles.label} style={{ margin: 0 }}>
+                Disponível para todos os pratos (global)
+              </span>
+            </label>
+          </div>
+
           <div className={styles.formActions}>
-            <Button type="button" variant="secondary" onClick={onClose}>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={saving}>
               Cancelar
             </Button>
-            <Button type="submit">
-              {extra ? 'Salvar Alterações' : 'Adicionar Extra'}
+            <Button type="submit" disabled={saving}>
+              {saving ? 'A guardar...' : extra ? 'Salvar Alterações' : 'Adicionar Extra'}
             </Button>
           </div>
         </form>

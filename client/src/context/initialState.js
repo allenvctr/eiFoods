@@ -12,4 +12,5 @@ export const initialState = {
     location: '',
     contact: '',
   },
+  orderId: null,
 }

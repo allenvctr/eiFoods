@@ -1,213 +1,135 @@
 import { useState } from 'react'
-import { Header } from '../../components'
-import { mockPratos } from '../../data/mockData'
+import { useAdmin } from '../../context/AdminContext'
+import { Header, Card } from '../../components'
+import { formatPrice } from '../../../../shared/utils'
+import type { DiaSemana } from '../../../../shared/types'
 import styles from './PratoDoDia.module.css'
 
-interface PratoDoDiaConfig {
-  pratoId: number
-  nomeCustom: string
-  descricaoCustom: string
-  precoCustom: number
-  imagem: string
-  publicado: boolean
-  horaCorte: string
+const DIA_LABELS: Record<DiaSemana, string> = {
+  segunda: 'Segunda-Feira',
+  terca: 'Terça-Feira',
+  quarta: 'Quarta-Feira',
+  quinta: 'Quinta-Feira',
+  sexta: 'Sexta-Feira',
 }
 
-const IMAGENS_SUGERIDAS = [
-  { label: 'Caril', url: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80' },
-  { label: 'Frango', url: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c4?auto=format&fit=crop&w=600&q=80' },
-  { label: 'Peixe', url: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80' },
-  { label: 'Massa', url: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80' },
-  { label: 'Carne', url: 'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=600&q=80' },
-  { label: 'Arroz', url: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=600&q=80' },
-]
+const DIAS_ORDEM: DiaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta']
 
-const pratoInicial = mockPratos[5]
+function getTodayDia(): DiaSemana | null {
+  const day = new Date().getDay() // 0=Dom, 1=Seg, ..., 5=Sex, 6=Sab
+  return DIAS_ORDEM[day - 1] ?? null
+}
 
 export function PratoDoDia() {
-  const [config, setConfig] = useState<PratoDoDiaConfig>({
-    pratoId: pratoInicial.id,
-    nomeCustom: pratoInicial.nome,
-    descricaoCustom: pratoInicial.descricao,
-    precoCustom: pratoInicial.preco,
-    imagem: IMAGENS_SUGERIDAS[0].url,
-    publicado: true,
-    horaCorte: '11:00',
-  })
-  const [guardado, setGuardado] = useState(false)
-  const [imgInput, setImgInput] = useState('')
+  const { state, setDayPrato } = useAdmin()
+  const [saving, setSaving] = useState<DiaSemana | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const todayDia = getTodayDia()
 
-  function handlePratoChange(id: number) {
-    const p = mockPratos.find(x => x.id === id)
-    if (!p) return
-    setConfig(c => ({
-      ...c,
-      pratoId: p.id,
-      nomeCustom: p.nome,
-      descricaoCustom: p.descricao,
-      precoCustom: p.preco,
-    }))
-    setGuardado(false)
+  const handleDayChange = async (dia: DiaSemana, pratoId: string) => {
+    setSaving(dia)
+    setError(null)
+    try {
+      await setDayPrato(dia, pratoId || null)
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setSaving(null)
+    }
   }
 
-  function handleGuardar() {
-    setGuardado(true)
-    setTimeout(() => setGuardado(false), 3000)
-  }
+  if (state.loading) return <div style={{ padding: 32 }}>A carregar...</div>
 
   return (
     <div className={styles.page}>
       <Header
         title="Prato do Dia"
-        subtitle="Configure o prato em destaque para hoje"
-        actions={
-          <div className={styles.headerAcoes}>
-            <span className={`${styles.statusBadge} ${config.publicado ? styles.publicado : styles.rascunho}`}>
-              {config.publicado ? 'Publicado' : 'Rascunho'}
-            </span>
-            <button className={styles.btnPublicar} onClick={() => setConfig(c => ({ ...c, publicado: !c.publicado }))}>
-              {config.publicado ? 'Despublicar' : 'Publicar'}
-            </button>
-          </div>
-        }
+        subtitle="Agenda semanal — configure o prato em destaque para cada dia"
       />
 
-      <div className={styles.layout}>
+      {error && (
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'var(--ui-danger-soft, #fdecea)', borderRadius: 8, color: 'var(--ui-danger, #c62828)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+          {error}
+          <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 16 }}>×</button>
+        </div>
+      )}
 
-        {/* Pré-visualização */}
-        <div className={styles.preview}>
-          <p className={styles.previewLabel}>Pré-visualização</p>
-          <div className={styles.previewCard}>
-            <div className={styles.previewImagemWrap}>
-              {config.imagem ? (
-                <img src={config.imagem} alt={config.nomeCustom} className={styles.previewImagem} />
+      <div className={styles.semanaGrid}>
+        {DIAS_ORDEM.map(dia => {
+          const diaAgendado = state.schedule?.semana.find(d => d.diaSemana === dia)
+          const pratoAtual = diaAgendado?.prato
+          const isToday = dia === todayDia
+          const isSaving = saving === dia
+
+          return (
+            <Card
+              key={dia}
+              className={`${styles.diaCard}${isToday ? ' ' + styles.diaCardHoje : ''}`}
+            >
+              <div className={styles.diaHeader}>
+                <h3 className={styles.diaNome}>{DIA_LABELS[dia]}</h3>
+                {isToday && (
+                  <span style={{
+                    fontSize: 11,
+                    padding: '2px 8px',
+                    borderRadius: 10,
+                    background: 'var(--ui-primary-soft, #e8eaf6)',
+                    color: 'var(--ui-primary, #3949ab)',
+                    fontWeight: 600,
+                  }}>Hoje</span>
+                )}
+              </div>
+
+              {pratoAtual ? (
+                <div className={styles.pratoInfo}>
+                  {pratoAtual.imagem?.url && (
+                    <img
+                      src={pratoAtual.imagem.url}
+                      alt={pratoAtual.nome}
+                      className={styles.pratoImagem}
+                    />
+                  )}
+                  <div>
+                    <p className={styles.pratoNome}>{pratoAtual.nome}</p>
+                    <p className={styles.pratoPreco}>{formatPrice(pratoAtual.preco)}</p>
+                  </div>
+                </div>
               ) : (
-                <div className={styles.previewImagemVazia}>Sem imagem</div>
+                <p className={styles.semPrato}>Sem prato agendado</p>
               )}
-              <span className={styles.previewBadge}>Prato do dia</span>
-              {!config.publicado && <span className={styles.previewRascunhoBadge}>Rascunho</span>}
-            </div>
-            <div className={styles.previewInfo}>
-              <p className={styles.previewNome}>{config.nomeCustom || '—'}</p>
-              <p className={styles.previewDescricao}>{config.descricaoCustom || '—'}</p>
-              <div className={styles.previewRodape}>
-                <span className={styles.previewPreco}>{config.precoCustom} MZN</span>
-                <span className={styles.previewHora}>Corte: {config.horaCorte}</span>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Formulário */}
-        <div className={styles.form}>
-
-          {/* Selecionar prato base */}
-          <div className={styles.secao}>
-            <h2 className={styles.secaoTitulo}>Prato base</h2>
-            <div className={styles.pratoGrid}>
-              {mockPratos.map(p => (
-                <button
-                  key={p.id}
-                  className={`${styles.pratoOpcao} ${config.pratoId === p.id ? styles.pratoOpcaoAtivo : ''}`}
-                  onClick={() => handlePratoChange(p.id)}
+              <div className={styles.selecionarWrap}>
+                <select
+                  className={styles.selectPrato}
+                  value={pratoAtual?._id ?? ''}
+                  onChange={(e) => handleDayChange(dia, e.target.value)}
+                  disabled={isSaving}
                 >
-                  <span className={styles.pratoOpcaoNome}>{p.nome}</span>
-                  <span className={styles.pratoOpcaoPreco}>{p.preco} MZN</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Detalhes editáveis */}
-          <div className={styles.secao}>
-            <h2 className={styles.secaoTitulo}>Detalhes do destaque</h2>
-            <div className={styles.campos}>
-              <div className={styles.campo}>
-                <label className={styles.label}>Nome em destaque</label>
-                <input
-                  className={styles.input}
-                  value={config.nomeCustom}
-                  onChange={e => { setConfig(c => ({ ...c, nomeCustom: e.target.value })); setGuardado(false) }}
-                  placeholder="Nome do prato..."
-                />
+                  <option value="">— Sem prato —</option>
+                  {state.pratos.map(p => (
+                    <option key={p._id} value={p._id}>
+                      {p.nome}{!p.disponivel ? ' (indisponível)' : ''}
+                    </option>
+                  ))}
+                </select>
+                {isSaving && (
+                  <span style={{ fontSize: 12, color: 'var(--ui-text-3)', marginTop: 4, display: 'block' }}>
+                    A guardar...
+                  </span>
+                )}
               </div>
-              <div className={styles.campo}>
-                <label className={styles.label}>Descrição</label>
-                <textarea
-                  className={styles.textarea}
-                  value={config.descricaoCustom}
-                  onChange={e => { setConfig(c => ({ ...c, descricaoCustom: e.target.value })); setGuardado(false) }}
-                  rows={3}
-                  placeholder="Descrição apelativa do prato..."
-                />
-              </div>
-              <div className={styles.campoRow}>
-                <div className={styles.campo}>
-                  <label className={styles.label}>Preço (MZN)</label>
-                  <input
-                    className={styles.input}
-                    type="number"
-                    value={config.precoCustom}
-                    onChange={e => { setConfig(c => ({ ...c, precoCustom: Number(e.target.value) })); setGuardado(false) }}
-                  />
-                </div>
-                <div className={styles.campo}>
-                  <label className={styles.label}>Hora de corte</label>
-                  <input
-                    className={styles.input}
-                    type="time"
-                    value={config.horaCorte}
-                    onChange={e => { setConfig(c => ({ ...c, horaCorte: e.target.value })); setGuardado(false) }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Imagem */}
-          <div className={styles.secao}>
-            <h2 className={styles.secaoTitulo}>Imagem</h2>
-            <div className={styles.imagensSugeridas}>
-              {IMAGENS_SUGERIDAS.map(img => (
-                <button
-                  key={img.url}
-                  className={`${styles.imagemOpcao} ${config.imagem === img.url ? styles.imagemOpcaoAtiva : ''}`}
-                  onClick={() => { setConfig(c => ({ ...c, imagem: img.url })); setImgInput(''); setGuardado(false) }}
-                >
-                  <img src={img.url} alt={img.label} className={styles.imagemThumb} />
-                  <span className={styles.imagemLabel}>{img.label}</span>
-                </button>
-              ))}
-            </div>
-            <div className={styles.campo} style={{ marginTop: '12px' }}>
-              <label className={styles.label}>URL personalizado</label>
-              <div className={styles.inputRow}>
-                <input
-                  className={styles.input}
-                  value={imgInput}
-                  onChange={e => setImgInput(e.target.value)}
-                  placeholder="https://..."
-                />
-                <button
-                  className={styles.btnAplicar}
-                  onClick={() => { if (imgInput) { setConfig(c => ({ ...c, imagem: imgInput })); setGuardado(false) } }}
-                >
-                  Aplicar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Guardar */}
-          <div className={styles.acoes}>
-            {guardado && <span className={styles.feedbackGuardado}>Guardado com sucesso</span>}
-            <button className={styles.btnGuardar} onClick={handleGuardar}>
-              Guardar alterações
-            </button>
-          </div>
-
-        </div>
+            </Card>
+          )
+        })}
       </div>
+
+      {!state.schedule && !state.loading && (
+        <Card>
+          <h3 style={{ margin: 0, fontSize: 15, color: 'var(--ui-text-2)' }}>
+            Agenda não encontrada — verifique a ligação ao servidor
+          </h3>
+        </Card>
+      )}
     </div>
   )
 }

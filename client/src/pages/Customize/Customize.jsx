@@ -1,8 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { extrasApi } from '../../api'
 import { useOrder } from '../../context/useOrder'
 import Navbar from '../../components/Navbar/Navbar'
-import { OPCOES_GRATUITAS, OPCOES_SAL, EXTRAS_PAGOS } from '../../data/menuData'
+import { OPCOES_GRATUITAS, OPCOES_SAL } from '../../data/menuData'
 import styles from './Customize.module.css'
 
 export default function Customize() {
@@ -13,6 +14,13 @@ export default function Customize() {
 
   // Permite editar um item já existente
   const editIndex = location.state?.editIndex ?? null
+  const [extrasDisponiveis, setExtrasDisponiveis] = useState([])
+
+  useEffect(() => {
+    if (selectedDish?._id) {
+      extrasApi.listForPrato(selectedDish._id).then(setExtrasDisponiveis).catch(() => {})
+    }
+  }, [selectedDish?._id])
 
   useEffect(() => {
     if (!selectedDish) {
@@ -24,9 +32,7 @@ export default function Customize() {
     return null
   }
 
-  const extraSelecionado = EXTRAS_PAGOS.find(
-    (e) => e.id === customizations.paid?.id
-  )
+  const extraSelecionado = customizations.paid
   const totalPrato = selectedDish.preco + (extraSelecionado?.preco ?? 0)
 
   function toggleFree(opcao) {
@@ -42,7 +48,7 @@ export default function Customize() {
   }
 
   function handlePago(extra) {
-    const jaSeleccionado = customizations.paid?.id === extra.id
+    const jaSeleccionado = customizations.paid?._id === extra._id
     dispatch({ type: 'SET_CUSTOMIZATION', payload: { paid: jaSeleccionado ? null : extra } })
   }
 
@@ -68,7 +74,10 @@ export default function Customize() {
       <main className={styles.main}>
 
         <div className={styles.pratoSeleccionado}>
-          <span className={styles.pratoEmoji}>{selectedDish.emoji}</span>
+          {selectedDish.imagem?.url
+            ? <img src={selectedDish.imagem.url} alt={selectedDish.nome} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />
+            : <span className={styles.pratoEmoji} style={{ fontSize: 48 }}>&#127859;</span>
+          }
           <div>
             <h1 className={styles.pratoNome}>{selectedDish.nome}</h1>
             <p className={styles.pratoPreco}>
@@ -121,11 +130,11 @@ export default function Customize() {
           <div className={styles.card}>
             <h2 className={styles.cardTitle}>⭐ Personalização Paga</h2>
             <div className={styles.checkboxLista}>
-              {EXTRAS_PAGOS.map((extra) => (
-                <label key={extra.id} className={styles.checkboxItem}>
+              {extrasDisponiveis.map((extra) => (
+                <label key={extra._id} className={styles.checkboxItem}>
                   <input
                     type="checkbox"
-                    checked={customizations.paid?.id === extra.id}
+                    checked={customizations.paid?._id === extra._id}
                     onChange={() => handlePago(extra)}
                   />
                   <span>{extra.nome} <strong>+{extra.preco} MZN</strong></span>

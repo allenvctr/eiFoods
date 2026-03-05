@@ -1,0 +1,39 @@
+const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
+
+async function request(path, options) {
+  const res = await fetch(`${BASE}${path}`, options)
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(body.error ?? `HTTP ${res.status}`)
+  }
+  return res.json()
+}
+
+function json(method, body) {
+  return {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }
+}
+
+export const pratosApi = {
+  /** Lista pratos; passar { disponivel: true } para filtrar */
+  list: (params) => {
+    const qs = params?.disponivel !== undefined ? `?disponivel=${params.disponivel}` : ''
+    return request(`/pratos${qs}`)
+  },
+}
+
+export const extrasApi = {
+  /** Extras globais + exclusivos de um prato específico */
+  listForPrato: (pratoId) => request(`/extras/prato/${pratoId}`),
+}
+
+export const scheduleApi = {
+  getHoje: () => request('/prato-do-dia/hoje'),
+}
+
+export const ordersApi = {
+  create: (payload) => request('/orders', json('POST', payload)),
+}

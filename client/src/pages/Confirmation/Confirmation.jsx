@@ -7,7 +7,7 @@ import styles from './Confirmation.module.css'
 export default function Confirmation() {
   const navigate = useNavigate()
   const { state, dispatch } = useOrder()
-  const { orderItems, deliveryDetails } = state
+  const { orderItems, deliveryDetails, orderId } = state
 
   // Guard clause with useEffect
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function Confirmation() {
     return null
   }
 
-  const total = orderItems.reduce((acc, item) => acc + item.prato.preco, 0)
+  const total = orderItems.reduce((acc, item) => acc + item.total, 0)
 
   function handleNovosPedido() {
     dispatch({ type: 'RESET_ORDER' })
@@ -53,6 +53,9 @@ export default function Confirmation() {
           <p className={styles.subtitulo}>
             O seu pedido foi registado com sucesso
           </p>
+          {orderId && (
+            <p style={{ fontSize: 12, color: 'var(--text-3, #aaa)', marginTop: 4 }}>Ref: #{orderId.slice(-8).toUpperCase()}</p>
+          )}
 
           <div className={styles.infoRow}>
             <span>🕛</span>
@@ -70,7 +73,7 @@ export default function Confirmation() {
             <p className={styles.resumoLabel}>RESUMO</p>
             {orderItems.map((item, index) => (
               <div key={index} className={styles.resumoItem}>
-                <span>{item.prato.emoji} {item.prato.nome}</span>
+                <span>{item.prato.nome}</span>
                 <span>{item.prato.preco} MZN</span>
               </div>
             ))}

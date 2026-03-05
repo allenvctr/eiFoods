@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useAdmin } from '../../context/AdminContext'
 import { Header, Card, Button, Badge } from '../../components'
-import { formatPrice, getCustomizationSummary } from '../../../../shared/utils'
-import type { Order } from '../../types/admin.types'
+import { formatPrice } from '../../../../shared/utils'
+import type { ApiOrder } from '../../lib/api'
 import type { OrderStatus } from '../../types/admin.types'
 import styles from './Orders.module.css'
 
@@ -48,7 +48,7 @@ function IcoCaixaVazia() {
 }
 
 export function Orders() {
-  const { state, dispatch } = useAdmin()
+  const { state, updateOrderStatus } = useAdmin()
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | 'all'>('all')
   
   const filteredOrders = selectedStatus === 'all'
@@ -114,13 +114,13 @@ export function Orders() {
       <div className={styles.ordersList}>
         {filteredOrders.map(order => (
           <Card 
-            key={order.id} 
+            key={order._id} 
             className={styles.orderCard}
             hover
           >
             <div className={styles.orderHeader}>
               <div className={styles.orderHeaderLeft}>
-                <div className={styles.orderId}>{order.id}</div>
+                <div className={styles.orderId}>#{order._id.slice(-6).toUpperCase()}</div>
                 <Badge variant={getStatusVariant(order.status)}>
                   {getStatusLabel(order.status)}
                 </Badge>
@@ -154,12 +154,11 @@ export function Orders() {
                 <div className={styles.itemsTitle}>Itens ({order.items.length})</div>
                 {order.items.map((item, index) => (
                   <div key={index} className={styles.orderItem}>
-                    <img src={item.prato.imagem} alt={item.prato.nome} className={styles.itemImagem} />
                     <div className={styles.itemDetails}>
-                      <div className={styles.itemName}>{item.prato.nome}</div>
-                      {getCustomizationSummary(item.customizations) && (
+                      <div className={styles.itemName}>{item.pratoNome}</div>
+                      {item.extras.length > 0 && (
                         <div className={styles.itemCustomizations}>
-                          {getCustomizationSummary(item.customizations)}
+                          {item.extras.map(e => e.nome).join(', ')}
                         </div>
                       )}
                     </div>
@@ -171,17 +170,12 @@ export function Orders() {
             
             <div className={styles.orderFooter}>
               <div className={styles.orderTime}>
-                {formatDateTime(order.createdAt)}
+                {formatDateTime(new Date(order.createdAt))}
               </div>
               <div className={styles.orderActions}>
                 <StatusButton
                   order={order}
-                  onStatusChange={(status) => {
-                    dispatch({
-                      type: 'UPDATE_ORDER_STATUS',
-                      payload: { id: order.id, status }
-                    })
-                  }}
+                  onStatusChange={(status) => { updateOrderStatus(order._id, status) }}
                 />
               </div>
             </div>
@@ -227,7 +221,7 @@ function FilterButton({ label, count, active, onClick, variant = 'default' }: Fi
 
 // Componente de botão de status
 interface StatusButtonProps {
-  order: Order
+  order: ApiOrder
   onStatusChange: (status: OrderStatus) => void
 }
 

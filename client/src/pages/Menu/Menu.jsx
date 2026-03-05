@@ -1,17 +1,46 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOrder } from '../../context/useOrder'
 import Navbar from '../../components/Navbar/Navbar'
-import { MENU_DO_DIA } from '../../data/menuData'
+import { pratosApi } from '../../api'
 import styles from './Menu.module.css'
 
 export default function Menu() {
   const navigate = useNavigate()
   const { dispatch } = useOrder()
+  const [pratos, setPratos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    pratosApi.list({ disponivel: true })
+      .then(setPratos)
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [])
 
   function handleSelecionar(prato) {
     dispatch({ type: 'SELECT_DISH', payload: prato })
     navigate('/customize')
   }
+
+  if (loading) return (
+    <div className={styles.page}>
+      <Navbar />
+      <main className={styles.main}>
+        <p style={{ textAlign: 'center', padding: 40, color: 'var(--text-2, #888)' }}>A carregar menu...</p>
+      </main>
+    </div>
+  )
+
+  if (error) return (
+    <div className={styles.page}>
+      <Navbar />
+      <main className={styles.main}>
+        <p style={{ textAlign: 'center', padding: 40, color: '#c62828' }}>Erro ao carregar menu: {error}</p>
+      </main>
+    </div>
+  )
 
   return (
     <div className={styles.page}>
@@ -21,10 +50,10 @@ export default function Menu() {
         <p className={styles.subtitulo}>Escolha o seu prato e personalize ao seu gosto</p>
 
         <div className={styles.lista}>
-          {MENU_DO_DIA.map((prato) => (
-            <div key={prato.id} className={styles.card}>
+          {pratos.map((prato) => (
+            <div key={prato._id} className={styles.card}>
               <img
-                src={prato.imagem}
+                src={prato.imagem?.url ?? prato.imagem}
                 alt={prato.nome}
                 className={styles.cardImagem}
               />
@@ -42,6 +71,12 @@ export default function Menu() {
             </div>
           ))}
         </div>
+
+        {pratos.length === 0 && (
+          <p style={{ textAlign: 'center', padding: 32, color: 'var(--text-2, #888)' }}>
+            Nenhum prato disponível hoje.
+          </p>
+        )}
       </main>
     </div>
   )

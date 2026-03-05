@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAdmin } from '../../context/AdminContext'
 import { Header, Card, Button } from '../../components'
 import { formatPrice } from '../../../../shared/utils'
-import type { Prato } from '../../../../shared/types'
+import type { ApiPrato } from '../../lib/api'
 import type { DishFormData } from '../../types/admin.types'
 import styles from './Dishes.module.css'
 
@@ -42,10 +42,11 @@ function IcoPratoVazio() {
 }
 
 export function Dishes() {
-  const { state, dispatch } = useAdmin()
+  const { state, createPrato, updatePrato, deletePrato, toggleDisponivel } = useAdmin()
   const [showModal, setShowModal] = useState(false)
-  const [editingDish, setEditingDish] = useState<Prato | null>(null)
+  const [editingDish, setEditingDish] = useState<ApiPrato | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const filteredDishes = state.pratos.filter(prato =>
     prato.nome.toLowerCase().includes(searchQuery.toLowerCase())
@@ -56,15 +57,43 @@ export function Dishes() {
     setShowModal(true)
   }
 
-  const handleEditDish = (dish: Prato) => {
+  const handleEditDish = (dish: ApiPrato) => {
     setEditingDish(dish)
     setShowModal(true)
   }
 
-  const handleDeleteDish = (id: number) => {
-    if (confirm('Tem certeza que deseja excluir este prato?')) {
-      dispatch({ type: 'DELETE_PRATO', payload: id })
+  const handleDeleteDish = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este prato? A imagem será removida do Cloudinary.')) return
+    try {
+      await deletePrato(id)
+    } catch (e) {
+      setActionError((e as Error).message)
     }
+  }
+
+  const handleToggle = async (dish: ApiPrato) => {
+    try {
+      await toggleDisponivel(dish._id, !dish.disponivel)
+    } catch (e) {
+      setActionError((e as Error).message)
+    }
+  }
+
+  const handleSave = async (data: DishFormData) => {
+    try {
+      if (editingDish) {
+        await updatePrato(editingDish._id, data)
+      } else {
+        await createPrato(data)
+      }
+      setShowModal(false)
+    } catch (e) {
+      setActionError((e as Error).message)
+    }
+  }
+
+  if (state.loading) {
+    return <div style={{ padding: '2rem' }}>A carregar pratos...</div>
   }
 
   return (
@@ -78,6 +107,12 @@ export function Dishes() {
           </Button>
         }
       />
+
+      {actionError && (
+        <Card className={styles.searchCard} style={{ borderColor: 'var(--ui-danger)', color: 'var(--ui-danger)' }}>
+          {actionError} <button onClick={() => setActionError(null)} style={{ marginLeft: 8 }}>✕</button>
+        </Card>
+      )}
 
       {/* Barra de pesquisa */}
       <Card className={styles.searchCard}>
@@ -93,9 +128,28 @@ export function Dishes() {
       {/* Grid de pratos */}
       <div className={styles.dishesGrid}>
         {filteredDishes.map(dish => (
-          <Card key={dish.id} className={styles.dishCard} hover>
-            <img src={dish.imagem} alt={dish.nome} className={styles.dishImagem} />
-            <h3 className={styles.dishName}>{dish.nome}</h3>
+          <Card key={dish._id} className={styles.dishCard} hover>
+            <img src={dish.imagem.url} alt={dish.nome} className={styles.dishImagem} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <h3 className={styles.dishName} style={{ flex: 1 }}>{dish.nome}</h3>
+              <button
+                title={dish.disponivel ? 'Disponível hoje — clique para desativar' : 'Indisponível — clique para ativar'}
+                onClick={() => handleToggle(dish)}
+                style={{
+                  padding: '2px 8px',
+                  borderRadius: 20,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  background: dish.disponivel ? 'var(--ui-success, #22c55e)' : 'var(--ui-text-3, #9ca3af)',
+                  color: '#fff',
+                  flexShrink: 0,
+                }}
+              >
+                {dish.disponivel ? 'Disponível' : 'Indisponível'}
+              </button>
+            </div>
             <p className={styles.dishDescription}>{dish.descricao}</p>
             <div className={styles.dishPrice}>{formatPrice(dish.preco)}</div>
             <div className={styles.dishActions}>
@@ -109,7 +163,7 @@ export function Dishes() {
               <Button
                 variant="danger"
                 size="small"
-                onClick={() => handleDeleteDish(dish.id)}
+                onClick={() => handleDeleteDish(dish._id)}
               >
                 <IcoLixo /> Excluir
               </Button>
@@ -135,21 +189,7 @@ export function Dishes() {
         <DishModal
           dish={editingDish}
           onClose={() => setShowModal(false)}
-          onSave={(dishData) => {
-            if (editingDish) {
-              dispatch({
-                type: 'UPDATE_PRATO',
-                payload: { ...editingDish, ...dishData }
-              })
-            } else {
-              const newId = Math.max(...state.pratos.map(p => p.id), 0) + 1
-              dispatch({
-                type: 'ADD_PRATO',
-                payload: { id: newId, ...dishData } as Prato
-              })
-            }
-            setShowModal(false)
-          }}
+          onSave={handleSave}
         />
       )}
     </div>
@@ -158,26 +198,40 @@ export function Dishes() {
 
 // Modal de formulário
 interface DishModalProps {
-  dish: Prato | null
+  dish: ApiPrato | null
   onClose: () => void
-  onSave: (data: DishFormData) => void
+  onSave: (data: DishFormData) => Promise<void>
 }
 
 function DishModal({ dish, onClose, onSave }: DishModalProps) {
-  const [formData, setFormData] = useState<DishFormData>({
-    nome: dish?.nome || '',
-    preco: dish?.preco || 0,
-    imagem: dish?.imagem || '',
-    descricao: dish?.descricao || ''
+  const [formData, setFormData] = useState<Omit<DishFormData, 'imageFile'>>({
+    nome: dish?.nome ?? '',
+    preco: dish?.preco ?? 0,
+    descricao: dish?.descricao ?? '',
+    disponivel: dish?.disponivel ?? true,
   })
+  const [imageFile, setImageFile] = useState<File | undefined>()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.nome || !formData.preco) {
-      alert('Preencha todos os campos obrigatórios')
+      setError('Preencha todos os campos obrigatórios')
       return
     }
-    onSave(formData)
+    if (!dish && !imageFile) {
+      setError('Imagem obrigatória para novo prato')
+      return
+    }
+    setSaving(true)
+    setError(null)
+    try {
+      await onSave({ ...formData, imageFile })
+    } catch (e) {
+      setError((e as Error).message)
+      setSaving(false)
+    }
   }
 
   return (
@@ -186,6 +240,8 @@ function DishModal({ dish, onClose, onSave }: DishModalProps) {
         <h2 className={styles.modalTitle}>
           {dish ? 'Editar Prato' : 'Novo Prato'}
         </h2>
+
+        {error && <p style={{ color: 'var(--ui-danger)', marginBottom: 12, fontSize: 13 }}>{error}</p>}
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
@@ -214,14 +270,22 @@ function DishModal({ dish, onClose, onSave }: DishModalProps) {
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>URL da Imagem</label>
+              <label className={styles.label}>
+                Imagem {dish ? '(deixar vazio para não alterar)' : '*'}
+              </label>
               <input
-                type="url"
-                value={formData.imagem}
-                onChange={(e) => setFormData({ ...formData, imagem: e.target.value })}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => setImageFile(e.target.files?.[0])}
                 className={styles.input}
-                placeholder="https://..."
               />
+              {dish?.imagem.url && !imageFile && (
+                <img
+                  src={dish.imagem.url}
+                  alt="imagem atual"
+                  style={{ marginTop: 6, height: 60, objectFit: 'cover', borderRadius: 6 }}
+                />
+              )}
             </div>
           </div>
 
@@ -235,12 +299,23 @@ function DishModal({ dish, onClose, onSave }: DishModalProps) {
             />
           </div>
 
+          <div className={styles.formGroup}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={formData.disponivel}
+                onChange={(e) => setFormData({ ...formData, disponivel: e.target.checked })}
+              />
+              <span className={styles.label} style={{ margin: 0 }}>Disponível hoje</span>
+            </label>
+          </div>
+
           <div className={styles.formActions}>
-            <Button type="button" variant="secondary" onClick={onClose}>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={saving}>
               Cancelar
             </Button>
-            <Button type="submit">
-              {dish ? 'Salvar Alterações' : 'Adicionar Prato'}
+            <Button type="submit" disabled={saving}>
+              {saving ? 'A guardar...' : dish ? 'Salvar Alterações' : 'Adicionar Prato'}
             </Button>
           </div>
         </form>
@@ -248,3 +323,4 @@ function DishModal({ dish, onClose, onSave }: DishModalProps) {
     </div>
   )
 }
+
