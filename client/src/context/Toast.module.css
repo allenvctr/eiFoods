@@ -1,0 +1,81 @@
+.container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 240px;
+  max-width: 360px;
+  animation: slideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  pointer-events: auto;
+}
+
+.saindo {
+  animation: slideOut 0.35s ease forwards;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(110%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(110%); }
+}
+
+.success {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  border-left: 4px solid var(--color-primary);
+}
+
+.error {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  border-left: 4px solid var(--color-error);
+}
+
+.info {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  border-left: 4px solid var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.message {
+  flex: 1;
+  line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+  .container {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+  }
+
+  .toast {
+    max-width: 100%;
+    min-width: unset;
+  }
+}

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useOrder } from '../../context/useOrder'
 import styles from './Navbar.module.css'
 
-export default function Navbar() {
+export default function Navbar({ showCta = false }) {
   const navigate = useNavigate()
   const { state } = useOrder()
   const totalItens = state.orderItems.length
@@ -43,19 +43,25 @@ export default function Navbar() {
             <span></span>
           </button>
 
-          <button
-            className={styles.cartBtn}
-            onClick={() => handleNavegar('/order-summary')}
-            aria-label="Ver carrinho"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-            </svg>
-            {totalItens > 0 && (
-              <span className={styles.badge}>{totalItens}</span>
-            )}
-          </button>
+          {showCta ? (
+            <button className={styles.ctaBtn} onClick={() => handleNavegar('/menu')}>
+              Encomendar agora
+            </button>
+          ) : (
+            <button
+              className={styles.cartBtn}
+              onClick={() => handleNavegar('/order-summary')}
+              aria-label="Ver carrinho"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+              {totalItens > 0 && (
+                <span className={styles.badge}>{totalItens}</span>
+              )}
+            </button>
+          )}
         </div>
       </header>
 
@@ -66,7 +72,12 @@ export default function Navbar() {
             <span onClick={() => handleNavegar('/')}>Início</span>
             <span onClick={() => handleNavegar('/menu')}>Menu</span>
             <span onClick={() => handleNavegar('/sorteio')}>Sorteio</span>
-            {totalItens > 0 && (
+            {showCta && (
+              <span className={styles.navMobileCta} onClick={() => handleNavegar('/menu')}>
+                Encomendar agora
+              </span>
+            )}
+            {!showCta && totalItens > 0 && (
               <span onClick={() => handleNavegar('/order-summary')}>
                 Carrinho ({totalItens})
               </span>

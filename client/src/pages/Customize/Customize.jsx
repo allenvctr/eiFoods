@@ -2,17 +2,18 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { extrasApi } from '../../api'
 import { useOrder } from '../../context/useOrder'
+import { useToast } from '../../context/ToastContext'
 import Navbar from '../../components/Navbar/Navbar'
-import { OPCOES_GRATUITAS, OPCOES_SAL } from '../../data/menuData'
+import { OPCOES_MOLHO, OPCOES_PIRIPIRI, OPCOES_SAL } from '../../data/menuData'
 import styles from './Customize.module.css'
 
 export default function Customize() {
   const navigate = useNavigate()
   const location = useLocation()
   const { state, dispatch } = useOrder()
+  const { showToast } = useToast()
   const { selectedDish, customizations } = state
 
-  // Permite editar um item já existente
   const editIndex = location.state?.editIndex ?? null
   const [extrasDisponiveis, setExtrasDisponiveis] = useState([])
 
@@ -23,49 +24,53 @@ export default function Customize() {
   }, [selectedDish?._id])
 
   useEffect(() => {
-    if (!selectedDish) {
-      navigate('/menu')
-    }
+    if (!selectedDish) navigate('/menu')
   }, [selectedDish, navigate])
 
-  if (!selectedDish) {
-    return null
-  }
+  if (!selectedDish) return null
 
-  const extraSelecionado = customizations.paid
-  const totalPrato = selectedDish.preco + (extraSelecionado?.preco ?? 0)
+  // paid é sempre array
+  const extrasSelecionados = Array.isArray(customizations.paid) ? customizations.paid : []
+  const totalExtras = extrasSelecionados.reduce((acc, e) => acc + e.preco, 0)
+  const totalPrato = selectedDish.preco + totalExtras
 
-  function toggleFree(opcao) {
-    const jaSeleccionada = customizations.free.includes(opcao)
-    const novaLista = jaSeleccionada
-      ? customizations.free.filter((o) => o !== opcao)
-      : [...customizations.free, opcao]
-    dispatch({ type: 'SET_CUSTOMIZATION', payload: { free: novaLista } })
+  // Toggle exclusivo dentro de um grupo (molho ou piripiri)
+  function toggleExclusivo(opcao, grupo) {
+    const semGrupo = customizations.free.filter(o => !grupo.includes(o))
+    if (customizations.free.includes(opcao)) {
+      dispatch({ type: 'SET_CUSTOMIZATION', payload: { free: semGrupo } })
+    } else {
+      dispatch({ type: 'SET_CUSTOMIZATION', payload: { free: [...semGrupo, opcao] } })
+    }
   }
 
   function handleSal(opcao) {
     dispatch({ type: 'SET_CUSTOMIZATION', payload: { salt: opcao } })
   }
 
+  // Toggle múltiplo para extras pagos
   function handlePago(extra) {
-    const jaSeleccionado = customizations.paid?._id === extra._id
-    dispatch({ type: 'SET_CUSTOMIZATION', payload: { paid: jaSeleccionado ? null : extra } })
+    const jaSelecionado = extrasSelecionados.some(e => e._id === extra._id)
+    const novos = jaSelecionado
+      ? extrasSelecionados.filter(e => e._id !== extra._id)
+      : [...extrasSelecionados, extra]
+    dispatch({ type: 'SET_CUSTOMIZATION', payload: { paid: novos } })
   }
 
   function handleAdicionar() {
     const novoItem = {
       prato: selectedDish,
-      customizations: { ...customizations },
+      customizations: { ...customizations, paid: extrasSelecionados },
       total: totalPrato,
     }
 
     if (editIndex !== null) {
-      // Substitui item existente
       dispatch({ type: 'REMOVE_ITEM', payload: editIndex })
     }
 
     dispatch({ type: 'ADD_TO_ORDER', payload: novoItem })
-    navigate('/order-summary')
+    showToast(`${selectedDish.nome} adicionado ao pedido!`)
+    navigate('/menu')
   }
 
   return (
@@ -73,18 +78,19 @@ export default function Customize() {
       <Navbar />
       <main className={styles.main}>
 
+        {/* Prato seleccionado */}
         <div className={styles.pratoSeleccionado}>
           {selectedDish.imagem?.url
-            ? <img src={selectedDish.imagem.url} alt={selectedDish.nome} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />
-            : <span className={styles.pratoEmoji} style={{ fontSize: 48 }}>&#127859;</span>
+            ? <img src={selectedDish.imagem.url} alt={selectedDish.nome} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+            : <span className={styles.pratoEmoji}>🍽️</span>
           }
           <div>
             <h1 className={styles.pratoNome}>{selectedDish.nome}</h1>
             <p className={styles.pratoPreco}>
               {selectedDish.preco} MZN
-              {extraSelecionado && (
+              {extrasSelecionados.length > 0 && (
                 <span className={styles.extraPreco}>
-                  {' '}+ {extraSelecionado.preco} MZN = <strong>{totalPrato} MZN</strong>
+                  {' '}+ {totalExtras} MZN = <strong>{totalPrato} MZN</strong>
                 </span>
               )}
             </p>
@@ -92,28 +98,60 @@ export default function Customize() {
         </div>
 
         <div className={styles.grid}>
+
+          {/* ── Personalização Gratuita ── */}
           <div className={styles.card}>
             <h2 className={styles.cardTitle}>✅ Personalização Gratuita</h2>
+
+            {/* Molho — exclusivo */}
             <div className={styles.grupo}>
-              <p className={styles.grupoLabel}>Molho e Picante</p>
+              <p className={styles.grupoLabel}>Molho</p>
               <div className={styles.checkboxLista}>
-                {OPCOES_GRATUITAS.map((opcao) => (
-                  <label key={opcao} className={styles.checkboxItem}>
+                {OPCOES_MOLHO.map(opcao => (
+                  <label
+                    key={opcao}
+                    className={`${styles.checkboxItem} ${customizations.free.includes(opcao) ? styles.checkboxItemActivo : ''}`}
+                  >
                     <input
                       type="checkbox"
                       checked={customizations.free.includes(opcao)}
-                      onChange={() => toggleFree(opcao)}
+                      onChange={() => toggleExclusivo(opcao, OPCOES_MOLHO)}
                     />
                     <span>{opcao}</span>
                   </label>
                 ))}
               </div>
             </div>
+
+            {/* Picante — exclusivo */}
+            <div className={styles.grupo}>
+              <p className={styles.grupoLabel}>Picante</p>
+              <div className={styles.checkboxLista}>
+                {OPCOES_PIRIPIRI.map(opcao => (
+                  <label
+                    key={opcao}
+                    className={`${styles.checkboxItem} ${customizations.free.includes(opcao) ? styles.checkboxItemActivo : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={customizations.free.includes(opcao)}
+                      onChange={() => toggleExclusivo(opcao, OPCOES_PIRIPIRI)}
+                    />
+                    <span>{opcao}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Sal — radio */}
             <div className={styles.grupo}>
               <p className={styles.grupoLabel}>Sal</p>
               <div className={styles.radioLista}>
-                {OPCOES_SAL.map((opcao) => (
-                  <label key={opcao} className={styles.radioItem}>
+                {OPCOES_SAL.map(opcao => (
+                  <label
+                    key={opcao}
+                    className={`${styles.radioItem} ${customizations.salt === opcao ? styles.radioItemActivo : ''}`}
+                  >
                     <input
                       type="radio"
                       name="sal"
@@ -127,25 +165,46 @@ export default function Customize() {
             </div>
           </div>
 
+          {/* ── Extras Pagos ── */}
           <div className={styles.card}>
-            <h2 className={styles.cardTitle}>⭐ Personalização Paga</h2>
-            <div className={styles.checkboxLista}>
-              {extrasDisponiveis.map((extra) => (
-                <label key={extra._id} className={styles.checkboxItem}>
-                  <input
-                    type="checkbox"
-                    checked={customizations.paid?._id === extra._id}
-                    onChange={() => handlePago(extra)}
-                  />
-                  <span>{extra.nome} <strong>+{extra.preco} MZN</strong></span>
-                </label>
-              ))}
-            </div>
+            <h2 className={styles.cardTitle}>⭐ Extras Pagos</h2>
+
+            {extrasDisponiveis.length === 0 ? (
+              <p className={styles.semExtras}>Sem extras disponíveis para este prato</p>
+            ) : (
+              <div className={styles.checkboxLista}>
+                {extrasDisponiveis.map(extra => {
+                  const selecionado = extrasSelecionados.some(e => e._id === extra._id)
+                  return (
+                    <label
+                      key={extra._id}
+                      className={`${styles.checkboxItem} ${styles.checkboxItemExtra} ${selecionado ? styles.checkboxItemActivo : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selecionado}
+                        onChange={() => handlePago(extra)}
+                      />
+                      <span className={styles.extraNome}>{extra.nome}</span>
+                      <span className={styles.extraPrecoBadge}>+{extra.preco} MZN</span>
+                    </label>
+                  )
+                })}
+              </div>
+            )}
+
+            {extrasSelecionados.length > 0 && (
+              <div className={styles.extrasTotal}>
+                <span>Total extras</span>
+                <strong>+{totalExtras} MZN</strong>
+              </div>
+            )}
           </div>
+
         </div>
 
         <button className={styles.btnAdicionar} onClick={handleAdicionar}>
-          {editIndex !== null ? '✏️ Guardar alterações' : 'Adicionar ao pedido'}
+          {editIndex !== null ? '✏️ Guardar alterações' : `Adicionar ao pedido · ${totalPrato} MZN`}
         </button>
 
       </main>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Navbar from '../../components/Navbar/Navbar'
 import styles from './Home.module.css'
 
 const SLIDES = [
@@ -87,19 +88,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
 
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.logo} onClick={() => navigate('/')}>
-          <img src="/logo.jpg" alt="Marmita Fresca" className={styles.logoImg} />
-        </div>
-        <nav className={styles.nav}>
-          <span onClick={() => navigate('/menu')}>Menu</span>
-          <span onClick={() => navigate('/sorteio')}>Sorteio</span>
-        </nav>
-        <button className={styles.navCta} onClick={() => navigate('/menu')}>
-          Encomendar agora
-        </button>
-      </header>
+      <Navbar showCta />
 
       <main>
 

@@ -86,10 +86,13 @@ export default function OrderSummary() {
           <div className={styles.colunaItens}>
             <ul className={styles.lista}>
               {orderItems.map((item, index) => {
+                const paidNomes = Array.isArray(item.customizations.paid)
+                  ? item.customizations.paid.map(e => e.nome)
+                  : item.customizations.paid?.nome ? [item.customizations.paid.nome] : []
                 const tags = [
                   ...item.customizations.free,
                   item.customizations.salt !== 'Normal' && item.customizations.salt,
-                  item.customizations.paid?.nome,
+                  ...paidNomes,
                 ].filter(Boolean)
 
                 return (

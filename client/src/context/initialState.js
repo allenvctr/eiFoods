@@ -2,7 +2,7 @@ export const initialState = {
   selectedDish: null,
   customizations: {
     free: [],
-    paid: null,
+    paid: [],
     salt: 'Normal',
   },
   orderItems: [],

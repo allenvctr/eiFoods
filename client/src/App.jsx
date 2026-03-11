@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import OrderProvider from './context/OrderProvider'
+import { ToastProvider } from './context/ToastContext'
 import Home from './pages/Home/Home'
 import Menu from './pages/Menu/Menu'
 import Customize from './pages/Customize/Customize'
@@ -12,6 +13,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <OrderProvider>
+        <ToastProvider>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/menu" element={<Menu />} />
@@ -21,6 +23,7 @@ export default function App() {
           <Route path="/confirmation" element={<Confirmation />} />
           <Route path="/sorteio" element={<Sorteio />} />
         </Routes>
+        </ToastProvider>
       </OrderProvider>
     </BrowserRouter>
   )

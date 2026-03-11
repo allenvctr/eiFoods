@@ -2,20 +2,20 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
-  background-color: var(--color-surface);
+  padding: 14px var(--space-xl);
+  background-color: rgba(255, 255, 255, 0.95);
   border-bottom: 1px solid var(--color-border);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  gap: var(--space-lg);
 }
 
+/* ── Logo ── */
 .logo {
-  display: flex;
-  align-items: center;
   cursor: pointer;
+  flex-shrink: 0;
   transition: transform var(--transition);
   z-index: 101;
 }
@@ -25,41 +25,33 @@
 }
 
 .logoImg {
-  height: 42px;
+  height: 48px;
   width: auto;
   object-fit: contain;
 }
 
-.rightSection {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* ── Nav Desktop ── */
+/* ── Nav Desktop (centrada) ── */
 .navDesktop {
   display: flex;
-  gap: 24px;
+  gap: var(--space-xl);
   font-family: var(--font-display);
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: var(--color-text-secondary);
+  flex: 1;
+  justify-content: center;
 }
 
 .navDesktop span {
   cursor: pointer;
-  transition: all var(--transition);
+  transition: color var(--transition);
   position: relative;
   padding: 4px 0;
-}
-
-.navDesktop span:hover {
-  color: var(--color-primary);
 }
 
 .navDesktop span::after {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: -2px;
   left: 0;
   width: 0;
   height: 2px;
@@ -67,11 +59,92 @@
   transition: width var(--transition);
 }
 
+.navDesktop span:hover {
+  color: var(--color-primary);
+}
+
 .navDesktop span:hover::after {
   width: 100%;
 }
 
-/* ── Hamburger Button ── */
+/* ── Right Section ── */
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ── Botão CTA "Encomendar agora" ── */
+.ctaBtn {
+  background-color: var(--color-accent);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.ctaBtn:hover {
+  background-color: var(--color-accent-dark);
+  transform: translateY(-1px);
+}
+
+/* ── Botão Carrinho ── */
+.cartBtn {
+  position: relative;
+  background: var(--color-primary-light);
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-full);
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+}
+
+.cartBtn:hover {
+  background-color: var(--color-primary);
+  color: white;
+  transform: scale(1.05);
+}
+
+/* ── Badge ── */
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: var(--color-accent);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* ── Hamburger ── */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -111,9 +184,9 @@
 .navMobile {
   display: none;
   position: fixed;
-  top: 60px;
+  top: 68px;
   right: 0;
-  width: 250px;
+  width: 260px;
   background-color: var(--color-surface);
   border-left: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
@@ -121,18 +194,12 @@
   z-index: 99;
   flex-direction: column;
   padding: var(--space-md) 0;
-  animation: slideIn 0.3s ease;
+  animation: slideIn 0.25s ease;
 }
 
 @keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .navMobile span {
@@ -151,6 +218,18 @@
   color: var(--color-primary);
 }
 
+.navMobileCta {
+  color: var(--color-accent) !important;
+  font-weight: 600 !important;
+}
+
+.navMobileCta:hover {
+  background-color: var(--color-accent-light) !important;
+  border-left-color: var(--color-accent) !important;
+  color: var(--color-accent) !important;
+}
+
+/* ── Overlay ── */
 .overlay {
   display: none;
   position: fixed;
@@ -158,9 +237,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.4);
   z-index: 98;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.25s ease;
 }
 
 @keyframes fadeIn {
@@ -168,81 +247,31 @@
   to { opacity: 1; }
 }
 
-/* ── Cart button ── */
-.cartBtn {
-  position: relative;
-  background: var(--color-primary-light);
-  border: 1.5px solid var(--color-primary);
-  border-radius: var(--radius-full);
-  width: 38px;
-  height: 38px;
-  cursor: pointer;
-  transition: all var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-primary);
-}
-
-.cartBtn:hover {
-  background-color: var(--color-primary);
-  color: white;
-  transform: scale(1.05);
-}
-
-/* ── Badge ── */
-.badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background-color: var(--color-primary);
-  color: white;
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--color-surface);
-  animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes badgePop {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
 /* ── Responsivo ── */
 @media (max-width: 768px) {
   .header {
-    padding: 10px 16px;
+    padding: 12px var(--space-lg);
   }
-  
+
   .navDesktop {
     display: none;
   }
-  
+
+  .ctaBtn {
+    display: none;
+  }
+
   .hamburger {
     display: flex;
   }
-  
+
   .navMobile,
   .overlay {
     display: flex;
   }
-  
-  .logoText {
-    font-size: 1rem;
-  }
-  
+
   .cartBtn {
     width: 36px;
     height: 36px;
-    font-size: 1rem;
   }
 }

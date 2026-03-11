@@ -43,13 +43,8 @@ export const MENU_DO_DIA = [
   },
 ]
 
-export const OPCOES_GRATUITAS = [
-  'Sem Molho',
-  'Com Molho',
-  'Sem Piripiri',
-  'Com Piripiri',
-]
-
+export const OPCOES_MOLHO = ['Sem Molho', 'Com Molho']
+export const OPCOES_PIRIPIRI = ['Sem Piripiri', 'Com Piripiri']
 export const OPCOES_SAL = ['Sem Sal', 'Pouco Sal', 'Normal']
 
 export const EXTRAS_PAGOS = [

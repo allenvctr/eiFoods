@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOrder } from '../../context/useOrder'
+import Navbar from '../../components/Navbar/Navbar'
 import styles from './Confirmation.module.css'
 
 
@@ -36,12 +37,7 @@ export default function Confirmation() {
   return (
     <div className={styles.page}>
 
-      <header className={styles.header}>
-        <div className={styles.logo}>
-          <span>🍽️</span>
-          <span className={styles.logoText}>eiFoods</span>
-        </div>
-      </header>
+      <Navbar />
 
       <main className={styles.main}>
 
