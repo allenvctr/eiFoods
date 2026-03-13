@@ -78,6 +78,14 @@ export default function Customize() {
       <Navbar />
       <main className={styles.main}>
 
+        <button
+          type="button"
+          className={styles.btnVoltar}
+          onClick={() => navigate('/menu')}
+        >
+          ← Voltar ao menu
+        </button>
+
         {/* Prato seleccionado */}
         <div className={styles.pratoSeleccionado}>
           {selectedDish.imagem?.url

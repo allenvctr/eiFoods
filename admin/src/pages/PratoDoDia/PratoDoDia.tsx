@@ -11,9 +11,10 @@ const DIA_LABELS: Record<DiaSemana, string> = {
   quarta: 'Quarta-Feira',
   quinta: 'Quinta-Feira',
   sexta: 'Sexta-Feira',
+  sabado: 'Sábado',
 }
 
-const DIAS_ORDEM: DiaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta']
+const DIAS_ORDEM: DiaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado']
 
 function getTodayDia(): DiaSemana | null {
   const day = new Date().getDay() // 0=Dom, 1=Seg, ..., 5=Sex, 6=Sab
@@ -48,9 +49,9 @@ export function PratoDoDia() {
       />
 
       {error && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'var(--ui-danger-soft, #fdecea)', borderRadius: 8, color: 'var(--ui-danger, #c62828)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className={styles.errorBanner}>
           {error}
-          <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 16 }}>×</button>
+          <button className={styles.errorClose} onClick={() => setError(null)} aria-label="Fechar erro">×</button>
         </div>
       )}
 
@@ -69,14 +70,7 @@ export function PratoDoDia() {
               <div className={styles.diaHeader}>
                 <h3 className={styles.diaNome}>{DIA_LABELS[dia]}</h3>
                 {isToday && (
-                  <span style={{
-                    fontSize: 11,
-                    padding: '2px 8px',
-                    borderRadius: 10,
-                    background: 'var(--ui-primary-soft, #e8eaf6)',
-                    color: 'var(--ui-primary, #3949ab)',
-                    fontWeight: 600,
-                  }}>Hoje</span>
+                    <span className={styles.hojeBadge}>Hoje</span>
                 )}
               </div>
 
@@ -113,9 +107,7 @@ export function PratoDoDia() {
                   ))}
                 </select>
                 {isSaving && (
-                  <span style={{ fontSize: 12, color: 'var(--ui-text-3)', marginTop: 4, display: 'block' }}>
-                    A guardar...
-                  </span>
+                  <span className={styles.saving}>A guardar...</span>
                 )}
               </div>
             </Card>

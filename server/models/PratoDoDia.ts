@@ -1,8 +1,8 @@
 import mongoose, { type Document, type Model, Schema, type Types } from 'mongoose'
 
-export type DiaSemana = 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta'
+export type DiaSemana = 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta' | 'sabado'
 
-export const DIAS_SEMANA: DiaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta']
+export const DIAS_SEMANA: DiaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado']
 
 export interface IDiaAgendado {
   diaSemana: DiaSemana

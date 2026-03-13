@@ -11,6 +11,7 @@ const DAY_MAP: Record<number, DiaSemana> = {
   3: 'quarta',
   4: 'quinta',
   5: 'sexta',
+  6: 'sabado',
 }
 
 // Helper: get or create the singleton schedule document
@@ -42,7 +43,7 @@ router.get('/hoje', async (_req, res, next) => {
     const diaSemana = DAY_MAP[dayOfWeek]
 
     if (!diaSemana) {
-      return res.json({ message: 'Sem prato do dia ao fim de semana', prato: null })
+      return res.json({ message: 'Sem prato do dia ao domingo', prato: null })
     }
 
     const doc = await getSchedule()

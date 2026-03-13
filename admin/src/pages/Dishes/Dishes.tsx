@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAdmin } from '../../context/AdminContext'
 import { Header, Card, Button } from '../../components'
 import { formatPrice } from '../../../../shared/utils'
-import type { ApiPrato } from '../../lib/api'
+import type { ApiExtra, ApiPrato } from '../../lib/api'
 import type { DishFormData } from '../../types/admin.types'
 import styles from './Dishes.module.css'
 
@@ -39,6 +39,11 @@ function IcoPratoVazio() {
       <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
     </svg>
   )
+}
+
+function getExclusiveExtrasCount(dish: ApiPrato): number {
+  if (!dish.extrasProprios?.length) return 0
+  return dish.extrasProprios.length
 }
 
 export function Dishes() {
@@ -130,6 +135,11 @@ export function Dishes() {
         {filteredDishes.map(dish => (
           <Card key={dish._id} className={styles.dishCard} hover>
             <img src={dish.imagem.url} alt={dish.nome} className={styles.dishImagem} />
+            {getExclusiveExtrasCount(dish) > 0 && (
+              <div className={styles.exclusiveBadge}>
+                {getExclusiveExtrasCount(dish)} extra{getExclusiveExtrasCount(dish) > 1 ? 's' : ''} exclusivo{getExclusiveExtrasCount(dish) > 1 ? 's' : ''}
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <h3 className={styles.dishName} style={{ flex: 1 }}>{dish.nome}</h3>
               <button
@@ -188,6 +198,7 @@ export function Dishes() {
       {showModal && (
         <DishModal
           dish={editingDish}
+          extras={state.extras}
           onClose={() => setShowModal(false)}
           onSave={handleSave}
         />
@@ -199,11 +210,19 @@ export function Dishes() {
 // Modal de formulário
 interface DishModalProps {
   dish: ApiPrato | null
+  extras: ApiExtra[]
   onClose: () => void
   onSave: (data: DishFormData) => Promise<void>
 }
 
-function DishModal({ dish, onClose, onSave }: DishModalProps) {
+function DishModal({ dish, extras, onClose, onSave }: DishModalProps) {
+  const initialExtras = useMemo(() => {
+    if (!dish?.extrasProprios?.length) return [] as string[]
+    return dish.extrasProprios
+      .map((extra) => (typeof extra === 'string' ? extra : extra._id))
+      .filter(Boolean)
+  }, [dish])
+
   const [formData, setFormData] = useState<Omit<DishFormData, 'imageFile'>>({
     nome: dish?.nome ?? '',
     preco: dish?.preco ?? 0,
@@ -211,8 +230,33 @@ function DishModal({ dish, onClose, onSave }: DishModalProps) {
     disponivel: dish?.disponivel ?? true,
   })
   const [imageFile, setImageFile] = useState<File | undefined>()
+  const [previewUrl, setPreviewUrl] = useState<string>(dish?.imagem.url ?? '')
+  const [selectedExclusiveExtras, setSelectedExclusiveExtras] = useState<string[]>(initialExtras)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const globalExtras = useMemo(() => extras.filter((extra) => extra.global), [extras])
+  const exclusiveExtras = useMemo(() => extras.filter((extra) => !extra.global), [extras])
+
+  useEffect(() => {
+    if (!imageFile) {
+      setPreviewUrl(dish?.imagem.url ?? '')
+      return
+    }
+
+    const objectUrl = URL.createObjectURL(imageFile)
+    setPreviewUrl(objectUrl)
+
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [imageFile, dish])
+
+  const handleToggleExclusiveExtra = (extraId: string) => {
+    setSelectedExclusiveExtras((prev) => (
+      prev.includes(extraId)
+        ? prev.filter((id) => id !== extraId)
+        : [...prev, extraId]
+    ))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -227,7 +271,7 @@ function DishModal({ dish, onClose, onSave }: DishModalProps) {
     setSaving(true)
     setError(null)
     try {
-      await onSave({ ...formData, imageFile })
+      await onSave({ ...formData, imageFile, extrasProprios: selectedExclusiveExtras })
     } catch (e) {
       setError((e as Error).message)
       setSaving(false)
@@ -279,14 +323,54 @@ function DishModal({ dish, onClose, onSave }: DishModalProps) {
                 onChange={(e) => setImageFile(e.target.files?.[0])}
                 className={styles.input}
               />
-              {dish?.imagem.url && !imageFile && (
-                <img
-                  src={dish.imagem.url}
-                  alt="imagem atual"
-                  style={{ marginTop: 6, height: 60, objectFit: 'cover', borderRadius: 6 }}
-                />
+              {previewUrl && (
+                <div className={styles.imagePreviewBox}>
+                  <img
+                    src={previewUrl}
+                    alt="preview do prato"
+                    className={styles.imagePreview}
+                  />
+                </div>
               )}
             </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Extras gerais (aplicam-se a todos os pratos)</label>
+            {globalExtras.length > 0 ? (
+              <div className={styles.extraChips}>
+                {globalExtras.map((extra) => (
+                  <span key={extra._id} className={styles.extraChipMuted}>
+                    {extra.nome} · {formatPrice(extra.preco)}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className={styles.helperText}>Nenhum extra geral cadastrado.</p>
+            )}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Extras específicos deste prato</label>
+            {exclusiveExtras.length > 0 ? (
+              <div className={styles.extraList}>
+                {exclusiveExtras.map((extra) => {
+                  const checked = selectedExclusiveExtras.includes(extra._id)
+                  return (
+                    <label key={extra._id} className={styles.extraOption}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => handleToggleExclusiveExtra(extra._id)}
+                      />
+                      <span>{extra.nome} · {formatPrice(extra.preco)}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className={styles.helperText}>Nenhum extra específico disponível. Crie extras como "Exclusivo" na secção Extras.</p>
+            )}
           </div>
 
           <div className={styles.formGroup}>

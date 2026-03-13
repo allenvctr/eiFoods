@@ -67,7 +67,7 @@ export interface ApiOrder {
 }
 
 export interface ApiDiaAgendado {
-  diaSemana: 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta'
+  diaSemana: 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta' | 'sabado'
   prato: ApiPrato | null
 }
 

@@ -98,6 +98,7 @@ async function seed() {
       { diaSemana: 'quarta',  prato: disponivel[2]?._id ?? null },
       { diaSemana: 'quinta',  prato: disponivel[3]?._id ?? null },
       { diaSemana: 'sexta',   prato: disponivel[0]?._id ?? null },
+      { diaSemana: 'sabado',  prato: disponivel[1]?._id ?? null },
     ],
   })
   console.log('[Seed] Agendamento semanal criado')

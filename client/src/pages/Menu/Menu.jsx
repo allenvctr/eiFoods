@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOrder } from '../../context/useOrder'
 import Navbar from '../../components/Navbar/Navbar'
-import { pratosApi } from '../../api'
+import { pratosApi, scheduleApi } from '../../api'
 import styles from './Menu.module.css'
 
 const DIAS = ['Domingo', 'Segunda-Feira', 'Terça-Feira', 'Quarta-Feira', 'Quinta-Feira', 'Sexta-Feira', 'Sábado']
@@ -30,14 +30,45 @@ export default function Menu() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [busca, setBusca] = useState('')
+  const [pratoDoDia, setPratoDoDia] = useState(null)
 
   const diaAtual = DIAS[new Date().getDay()]
 
   useEffect(() => {
-    pratosApi.list({ disponivel: true })
-      .then(setPratos)
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false))
+    let active = true
+
+    Promise.all([
+      pratosApi.list({ disponivel: true }),
+      scheduleApi.getHoje().catch(() => ({ prato: null })),
+    ])
+      .then(([listaPratos, hoje]) => {
+        if (!active) return
+        setPratoDoDia(hoje?.prato ?? null)
+
+        const hojeId = hoje?.prato?._id
+        if (!hojeId) {
+          setPratos(listaPratos)
+          return
+        }
+
+        const ordenados = [...listaPratos].sort((a, b) => {
+          if (a._id === hojeId) return -1
+          if (b._id === hojeId) return 1
+          return 0
+        })
+
+        setPratos(ordenados)
+      })
+      .catch(e => {
+        if (active) setError(e.message)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [])
 
   const pratosFiltrados = pratos.filter(p =>
@@ -91,6 +122,15 @@ export default function Menu() {
         </div>
       </div>
 
+      {pratoDoDia && (
+        <div className={styles.todayBar}>
+          <div className={styles.todayBarInner}>
+            <span className={styles.todayBadge}>Prato do dia</span>
+            <p className={styles.todayText}>{pratoDoDia.nome}</p>
+          </div>
+        </div>
+      )}
+
       {/* Container 2 colunas */}
       <div className={styles.container}>
 
@@ -127,6 +167,9 @@ export default function Menu() {
             <div className={styles.lista}>
               {pratosFiltrados.map((prato) => (
                 <div key={prato._id} className={styles.card}>
+                  {pratoDoDia?._id === prato._id && (
+                    <span className={styles.cardTodayBadge}>Hoje</span>
+                  )}
                   <div className={styles.cardImagemWrap}>
                     <img
                       src={prato.imagem?.url ?? prato.imagem}

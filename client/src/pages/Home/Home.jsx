@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
+import { scheduleApi } from '../../api'
 import styles from './Home.module.css'
 
 const SLIDES = [
@@ -24,10 +25,10 @@ const SLIDES = [
   },
 ]
 
-const PRATO_DO_DIA = {
+const PRATO_DO_DIA_FALLBACK = {
   nome: 'Caril de Frango com Arroz Basmati',
   descricao: 'Caril aromático preparado com frango fresco, especiarias selecionadas e arroz basmati perfumado. Disponível até às 11h.',
-  preco: '290 MZN',
+  preco: 290,
   imagem: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=900&q=80',
 }
 
@@ -61,6 +62,7 @@ export default function Home() {
   const navigate = useNavigate()
   const [slideAtivo, setSlideAtivo] = useState(0)
   const [transicao, setTransicao] = useState(true)
+  const [pratoDoDia, setPratoDoDia] = useState(null)
 
   const proximoSlide = useCallback(() => {
     setTransicao(false)
@@ -75,6 +77,29 @@ export default function Home() {
     return () => clearInterval(timer)
   }, [proximoSlide])
 
+  useEffect(() => {
+    let active = true
+
+    async function carregarPratoDoDia() {
+      try {
+        const hoje = await scheduleApi.getHoje()
+        if (active) setPratoDoDia(hoje?.prato ?? null)
+      } catch {
+        if (active) setPratoDoDia(null)
+      }
+    }
+
+    void carregarPratoDoDia()
+
+    const onFocus = () => { void carregarPratoDoDia() }
+    window.addEventListener('focus', onFocus)
+
+    return () => {
+      active = false
+      window.removeEventListener('focus', onFocus)
+    }
+  }, [])
+
   function irParaSlide(idx) {
     setTransicao(false)
     setTimeout(() => {
@@ -84,6 +109,9 @@ export default function Home() {
   }
 
   const slide = SLIDES[slideAtivo]
+  const pratoExibido = pratoDoDia ?? PRATO_DO_DIA_FALLBACK
+  const precoPrato = Number(pratoExibido.preco)
+  const precoTexto = Number.isFinite(precoPrato) ? `${precoPrato} MZN` : 'Consulte no menu'
 
   return (
     <div className={styles.page}>
@@ -161,10 +189,10 @@ export default function Home() {
           <div className={styles.pratoConteudo}>
             <div className={styles.pratoTexto}>
               <span className={styles.pratoBadge}>Prato do dia</span>
-              <h2 className={styles.pratoNome}>{PRATO_DO_DIA.nome}</h2>
-              <p className={styles.pratoDescricao}>{PRATO_DO_DIA.descricao}</p>
+              <h2 className={styles.pratoNome}>{pratoExibido.nome}</h2>
+              <p className={styles.pratoDescricao}>{pratoExibido.descricao}</p>
               <div className={styles.pratoRodape}>
-                <span className={styles.pratoPreco}>{PRATO_DO_DIA.preco}</span>
+                <span className={styles.pratoPreco}>{precoTexto}</span>
                 <button className={styles.pratoBtn} onClick={() => navigate('/menu')}>
                   Encomendar
                 </button>
@@ -172,8 +200,8 @@ export default function Home() {
             </div>
             <div className={styles.pratoImagemWrap}>
               <img
-                src={PRATO_DO_DIA.imagem}
-                alt={PRATO_DO_DIA.nome}
+                src={pratoExibido.imagem?.url ?? pratoExibido.imagem}
+                alt={pratoExibido.nome}
                 className={styles.pratoImagem}
               />
             </div>

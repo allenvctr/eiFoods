@@ -72,7 +72,7 @@ const spec = {
         properties: {
           diaSemana: {
             type: 'string',
-            enum: ['segunda', 'terca', 'quarta', 'quinta', 'sexta'],
+            enum: ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'],
             example: 'segunda',
           },
           prato: {
@@ -402,7 +402,7 @@ const spec = {
       get: {
         tags: ['Prato do Dia'],
         summary: 'Obter agenda semanal completa',
-        description: 'Devolve o documento singleton com a agenda de Segunda a Sexta, pratos populados.',
+        description: 'Devolve o documento singleton com a agenda de Segunda a Sábado, pratos populados.',
         responses: {
           200: { description: 'Agenda semanal', content: { 'application/json': { schema: { $ref: '#/components/schemas/AgendaSemanal' } } } },
         },
@@ -413,7 +413,7 @@ const spec = {
       get: {
         tags: ['Prato do Dia'],
         summary: 'Prato do dia de hoje',
-        description: 'Determina o dia da semana no servidor. Devove `{ prato: null }` ao fim-de-semana ou quando não há prato agendado.',
+        description: 'Determina o dia da semana no servidor. Devolve `{ prato: null }` ao domingo ou quando não há prato agendado.',
         responses: {
           200: {
             description: 'Prato do dia',
@@ -422,7 +422,7 @@ const spec = {
                 schema: {
                   type: 'object',
                   properties: {
-                    diaSemana: { type: 'string', enum: ['segunda', 'terca', 'quarta', 'quinta', 'sexta'] },
+                    diaSemana: { type: 'string', enum: ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'] },
                     prato: { oneOf: [{ $ref: '#/components/schemas/Prato' }, { type: 'null' }] },
                     message: { type: 'string' },
                   },
@@ -443,7 +443,7 @@ const spec = {
             name: 'diaSemana',
             in: 'path',
             required: true,
-            schema: { type: 'string', enum: ['segunda', 'terca', 'quarta', 'quinta', 'sexta'] },
+            schema: { type: 'string', enum: ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'] },
             example: 'segunda',
           },
         ],

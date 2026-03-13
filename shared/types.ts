@@ -137,10 +137,10 @@ export type OrderAction =
 // Agenda Semanal / Prato do Dia
 // ═══════════════════════════════════════════════════════════════════════════
 
-/** Dias de serviço (2ª a 6ª) */
-export type DiaSemana = 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta'
+/** Dias de serviço (2ª a sábado) */
+export type DiaSemana = 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta' | 'sabado'
 
-export const DIAS_SEMANA: DiaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta']
+export const DIAS_SEMANA: DiaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado']
 
 /** Entrada de um dia no agendamento semanal */
 export interface DiaAgendado {

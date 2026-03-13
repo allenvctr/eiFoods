@@ -97,6 +97,42 @@
   margin: 0 auto;
 }
 
+.todayBar {
+  padding: 0 var(--space-xl);
+}
+
+.todayBarInner {
+  max-width: 1200px;
+  margin: var(--space-md) auto 0;
+  background-color: var(--color-primary-light);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.todayBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+}
+
+.todayText {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
 /* ── Container 2 colunas ── */
 .container {
   display: grid;
@@ -188,6 +224,7 @@
 .card {
   background-color: var(--color-surface);
   border-radius: var(--radius-lg);
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-lg);
@@ -196,6 +233,21 @@
   transition: all var(--transition);
   overflow: hidden;
   animation: fadeUp 0.45s ease both;
+}
+
+.cardTodayBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: var(--color-accent);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-full);
+  padding: 4px 8px;
+  z-index: 1;
 }
 
 .card:nth-child(1) { animation-delay: 0.05s; }
