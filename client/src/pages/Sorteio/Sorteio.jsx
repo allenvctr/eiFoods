@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import styles from './Sorteio.module.css'
@@ -7,8 +7,13 @@ const PRATO_SORTEIO = {
   nome: 'Caril de Frango com Arroz Basmati',
   descricao: 'Caril aromático com frango fresco, especiarias selecionadas e arroz basmati perfumado.',
   valor: '290 MZN',
-  data: 'Sexta-feira, 28 de Fevereiro de 2025',
+  data: 'Sábado, 01 de Março de 2025',
   imagem: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80',
+}
+
+const RESULTADO_OFICIAL = {
+  vencedorRef: '#0061',
+  publicadoEm: 'Sábado, 01 de Março de 2025 · 10:30',
 }
 
 const PARTICIPANTES = [
@@ -26,53 +31,12 @@ const PARTICIPANTES = [
   { id: 12, nome: 'Tiago Fumo',       ref: '#0184', empresa: 'Cimentos de Moç.' },
 ]
 
-const DURACAO_ANIMACAO = 3200
-const INTERVALO_INICIAL = 80
-
 export default function Sorteio() {
   const navigate = useNavigate()
-  const [fase, setFase] = useState('idle') // idle | animando | resultado
-  const [nomeSelecionado, setNomeSelecionado] = useState(null)
-  const [vencedor, setVencedor] = useState(null)
-  const timerRef = useRef(null)
-
-  function iniciarSorteio() {
-    if (fase !== 'idle') return
-    setFase('animando')
-    setVencedor(null)
-
-    const idxVencedor = Math.floor(Math.random() * PARTICIPANTES.length)
-    const inicio = Date.now()
-    let intervalo = INTERVALO_INICIAL
-
-    function ciclo() {
-      const elapsed = Date.now() - inicio
-      const progresso = Math.min(elapsed / DURACAO_ANIMACAO, 1)
-
-      // desacelera exponencialmente
-      intervalo = INTERVALO_INICIAL + progresso * progresso * 700
-
-      const idxAleatório = Math.floor(Math.random() * PARTICIPANTES.length)
-      setNomeSelecionado(PARTICIPANTES[idxAleatório])
-
-      if (progresso < 1) {
-        timerRef.current = setTimeout(ciclo, intervalo)
-      } else {
-        setNomeSelecionado(PARTICIPANTES[idxVencedor])
-        setVencedor(PARTICIPANTES[idxVencedor])
-        setFase('resultado')
-      }
-    }
-
-    timerRef.current = setTimeout(ciclo, intervalo)
-  }
-
-  function reiniciar() {
-    clearTimeout(timerRef.current)
-    setFase('idle')
-    setVencedor(null)
-    setNomeSelecionado(null)
-  }
+  const vencedor = useMemo(
+    () => PARTICIPANTES.find((p) => p.ref === RESULTADO_OFICIAL.vencedorRef) ?? null,
+    []
+  )
 
   return (
     <div className={styles.page}>
@@ -82,11 +46,12 @@ export default function Sorteio() {
 
         {/* Cabeçalho da página */}
         <div className={styles.pageHeader}>
-          <span className={styles.pageBadge}>Sorteio ao vivo</span>
-          <h1 className={styles.pageTitulo}>Sorteio do Dia</h1>
+          <span className={styles.pageBadge}>Resultado oficial</span>
+          <h1 className={styles.pageTitulo}>Resultado do Sorteio</h1>
           <p className={styles.pageSub}>
-            Um cliente sortudo recebe hoje o prato do dia gratuitamente. O sorteio é realizado às 10h30, antes do fecho das encomendas.
+            O sorteio é realizado no painel de administração. Aqui você acompanha apenas o resultado publicado e os participantes do dia.
           </p>
+          <p className={styles.adminNotice}>Publicado pelo admin em {RESULTADO_OFICIAL.publicadoEm}</p>
         </div>
 
         <div className={styles.conteudo}>
@@ -116,55 +81,29 @@ export default function Sorteio() {
               </div>
             </div>
 
-            {/* Máquina de sorteio */}
+            {/* Resultado publicado */}
             <div className={styles.maquina}>
-              <p className={styles.maquinaLabel}>
-                {fase === 'idle'     && 'Pronto para sortear'}
-                {fase === 'animando' && 'A sortear...'}
-                {fase === 'resultado' && 'Vencedor apurado'}
-              </p>
+              <p className={styles.maquinaLabel}>Resultado divulgado pelo admin</p>
 
-              <div className={`${styles.tambor} ${fase === 'animando' ? styles.tamborAtivo : ''} ${fase === 'resultado' ? styles.tamborResultado : ''}`}>
-                {fase === 'idle' && (
-                  <span className={styles.tamborPlaceholder}>
-                    Clique em "Sortear" para iniciar
-                  </span>
-                )}
-                {(fase === 'animando' || fase === 'resultado') && nomeSelecionado && (
+              <div className={`${styles.tambor} ${styles.tamborResultado}`}>
+                {vencedor ? (
                   <>
-                    <span className={styles.tamborRef}>{nomeSelecionado.ref}</span>
-                    <span className={styles.tamborNome}>{nomeSelecionado.nome}</span>
-                    <span className={styles.tamborEmpresa}>{nomeSelecionado.empresa}</span>
+                    <span className={styles.tamborRef}>{vencedor.ref}</span>
+                    <span className={styles.tamborNome}>{vencedor.nome}</span>
+                    <span className={styles.tamborEmpresa}>{vencedor.empresa}</span>
                   </>
+                ) : (
+                  <span className={styles.tamborPlaceholder}>Resultado ainda não publicado</span>
                 )}
               </div>
 
-              {fase === 'idle' && (
-                <button className={styles.btnSortear} onClick={iniciarSorteio}>
-                  Sortear
-                </button>
-              )}
-
-              {fase === 'animando' && (
-                <button className={styles.btnSortear} disabled>
-                  A sortear...
-                </button>
-              )}
-
-              {fase === 'resultado' && (
-                <div className={styles.acoesFinal}>
-                  <button className={styles.btnReiniciar} onClick={reiniciar}>
-                    Novo sorteio
-                  </button>
-                  <button className={styles.btnMenu} onClick={() => navigate('/menu')}>
-                    Ver menu
-                  </button>
-                </div>
-              )}
+              <button className={styles.btnMenu} onClick={() => navigate('/menu')}>
+                Ver menu
+              </button>
             </div>
 
             {/* Banner do vencedor */}
-            {fase === 'resultado' && vencedor && (
+            {vencedor && (
               <div className={styles.vencedorBanner}>
                 <div className={styles.vencedorTrofeu}>
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -198,18 +137,14 @@ export default function Sorteio() {
               {PARTICIPANTES.map((p) => (
                 <li
                   key={p.id}
-                  className={`${styles.listaItem} ${
-                    fase === 'animando' && nomeSelecionado?.id === p.id ? styles.listaItemAtivo : ''
-                  } ${
-                    fase === 'resultado' && vencedor?.id === p.id ? styles.listaItemVencedor : ''
-                  }`}
+                  className={`${styles.listaItem} ${vencedor?.id === p.id ? styles.listaItemVencedor : ''}`}
                 >
                   <span className={styles.listaRef}>{p.ref}</span>
                   <div className={styles.listaInfo}>
                     <span className={styles.listaNome}>{p.nome}</span>
                     <span className={styles.listaEmpresa}>{p.empresa}</span>
                   </div>
-                  {fase === 'resultado' && vencedor?.id === p.id && (
+                  {vencedor?.id === p.id && (
                     <span className={styles.listaVencedorTag}>Vencedor</span>
                   )}
                 </li>
