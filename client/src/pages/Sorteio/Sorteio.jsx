@@ -1,6 +1,8 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
+import { sorteioApi } from '../../api'
+import { CONFIG } from '../../data/menuData'
 import styles from './Sorteio.module.css'
 
 const PRATO_SORTEIO = {
@@ -11,32 +13,81 @@ const PRATO_SORTEIO = {
   imagem: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80',
 }
 
-const RESULTADO_OFICIAL = {
-  vencedorRef: '#0061',
-  publicadoEm: 'Sábado, 01 de Março de 2025 · 10:30',
-}
-
-const PARTICIPANTES = [
-  { id: 1, nome: 'Ana Machava',       ref: '#0023', empresa: 'Mozal S.A.' },
-  { id: 2, nome: 'Carlos Sitoe',      ref: '#0047', empresa: 'BCI Banco' },
-  { id: 3, nome: 'Fátima Nhaca',      ref: '#0061', empresa: 'Vodacom Moç.' },
-  { id: 4, nome: 'João Cossa',        ref: '#0082', empresa: 'EDM' },
-  { id: 5, nome: 'Maria Tembe',       ref: '#0094', empresa: 'Mcel' },
-  { id: 6, nome: 'Pedro Mondlane',    ref: '#0105', empresa: 'Millennium BIM' },
-  { id: 7, nome: 'Sofia Bila',        ref: '#0118', empresa: 'SPI Gestão' },
-  { id: 8, nome: 'Rui Maputo',        ref: '#0133', empresa: 'JAT Seguros' },
-  { id: 9, nome: 'Dina Chapo',        ref: '#0147', empresa: 'Cervejas de Moç.' },
-  { id: 10, nome: 'Nelson Guambe',    ref: '#0159', empresa: 'Mozal S.A.' },
-  { id: 11, nome: 'Rosa Macia',       ref: '#0171', empresa: 'Corridor Sands' },
-  { id: 12, nome: 'Tiago Fumo',       ref: '#0184', empresa: 'Cimentos de Moç.' },
-]
+const PARTICIPANTES = []
+const TAXA_PARTICIPACAO = 10
 
 export default function Sorteio() {
   const navigate = useNavigate()
+  const [participantes, setParticipantes] = useState(PARTICIPANTES)
+  const [vencedorAtual, setVencedorAtual] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [inscricao, setInscricao] = useState({ nome: '', empresa: '', contacto: '' })
+  const [inscrevendo, setInscrevendo] = useState(false)
+  const [inscricaoMsg, setInscricaoMsg] = useState(null)
+
+  useEffect(() => {
+    let active = true
+    void (async () => {
+      try {
+        const data = await sorteioApi.get()
+        if (!active) return
+        setParticipantes(data.participantes ?? [])
+        setVencedorAtual(data.vencedorAtual ?? null)
+      } catch (e) {
+        if (active) setError(e.message)
+      } finally {
+        if (active) setLoading(false)
+      }
+    })()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   const vencedor = useMemo(
-    () => PARTICIPANTES.find((p) => p.ref === RESULTADO_OFICIAL.vencedorRef) ?? null,
-    []
+    () => participantes.find((p) => p.id === vencedorAtual?.participanteId) ?? null,
+    [participantes, vencedorAtual]
   )
+
+  const dataPublicacao = vencedorAtual?.data
+    ? new Date(vencedorAtual.data).toLocaleString('pt-PT', { dateStyle: 'full', timeStyle: 'short' })
+    : null
+
+  const whatsappTexto = encodeURIComponent(
+    `Olá! Quero participar no sorteio. Já fiz o pagamento de ${TAXA_PARTICIPACAO} MZN e envio o comprovativo.`
+  )
+  const whatsappUrl = `https://wa.me/${CONFIG.whatsappNumero}?text=${whatsappTexto}`
+
+  async function submeterInscricao(e) {
+    e.preventDefault()
+    if (!inscricao.nome.trim() || !inscricao.contacto.trim()) {
+      setInscricaoMsg('Preencha nome e contacto para se inscrever.')
+      return
+    }
+
+    setInscrevendo(true)
+    setInscricaoMsg(null)
+    try {
+      await sorteioApi.inscrever(inscricao)
+      setInscricao({ nome: '', empresa: '', contacto: '' })
+      setInscricaoMsg('Inscrição enviada! Agora envie o comprovativo no WhatsApp e aguarde confirmação do admin.')
+    } catch (err) {
+      setInscricaoMsg(err.message)
+    } finally {
+      setInscrevendo(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <Navbar />
+        <main className={styles.main}>A carregar resultado do sorteio...</main>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.page}>
@@ -51,8 +102,58 @@ export default function Sorteio() {
           <p className={styles.pageSub}>
             O sorteio é realizado no painel de administração. Aqui você acompanha apenas o resultado publicado e os participantes do dia.
           </p>
-          <p className={styles.adminNotice}>Publicado pelo admin em {RESULTADO_OFICIAL.publicadoEm}</p>
+          <p className={styles.adminNotice}>
+            {dataPublicacao
+              ? `Publicado pelo admin em ${dataPublicacao}`
+              : 'Resultado ainda não publicado pelo admin'}
+          </p>
+          {error && <p className={styles.adminNotice}>Erro ao carregar sorteio: {error}</p>}
         </div>
+
+        <section className={styles.participarCard}>
+          <h2 className={styles.participarTitulo}>Como participar</h2>
+          <ol className={styles.participarLista}>
+            <li>Pague a taxa de participação de <strong>{TAXA_PARTICIPACAO} MZN</strong>.</li>
+            <li>Envie o comprovativo de pagamento no WhatsApp.</li>
+            <li>Aguarde a confirmação do admin para entrar na lista de participantes.</li>
+          </ol>
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+            className={styles.btnParticipar}
+          >
+            Enviar comprovativo no WhatsApp
+          </a>
+
+          <form className={styles.inscricaoForm} onSubmit={submeterInscricao}>
+            <h3 className={styles.inscricaoTitulo}>Inscrever-se no sorteio</h3>
+            <div className={styles.inscricaoGrid}>
+              <input
+                className={styles.inscricaoInput}
+                placeholder="Nome completo"
+                value={inscricao.nome}
+                onChange={(e) => setInscricao((prev) => ({ ...prev, nome: e.target.value }))}
+              />
+              <input
+                className={styles.inscricaoInput}
+                placeholder="Empresa"
+                value={inscricao.empresa}
+                onChange={(e) => setInscricao((prev) => ({ ...prev, empresa: e.target.value }))}
+              />
+              <input
+                className={styles.inscricaoInput}
+                placeholder="Contacto"
+                value={inscricao.contacto}
+                onChange={(e) => setInscricao((prev) => ({ ...prev, contacto: e.target.value }))}
+              />
+            </div>
+            <button className={styles.btnInscrever} type="submit" disabled={inscrevendo}>
+              {inscrevendo ? 'A enviar...' : 'Enviar inscrição'}
+            </button>
+            {inscricaoMsg && <p className={styles.inscricaoMsg}>{inscricaoMsg}</p>}
+          </form>
+        </section>
 
         <div className={styles.conteudo}>
 
@@ -71,11 +172,11 @@ export default function Sorteio() {
                 <div className={styles.pratoMeta}>
                   <div className={styles.pratoMetaItem}>
                     <span className={styles.pratoMetaLabel}>Valor</span>
-                    <span className={styles.pratoMetaValor}>{PRATO_SORTEIO.valor}</span>
+                      <span className={styles.pratoMetaValor}>{vencedorAtual?.premioValor ? `${vencedorAtual.premioValor} MZN` : PRATO_SORTEIO.valor}</span>
                   </div>
                   <div className={styles.pratoMetaItem}>
                     <span className={styles.pratoMetaLabel}>Data</span>
-                    <span className={styles.pratoMetaValor}>{PRATO_SORTEIO.data}</span>
+                      <span className={styles.pratoMetaValor}>{dataPublicacao ?? PRATO_SORTEIO.data}</span>
                   </div>
                 </div>
               </div>
@@ -119,8 +220,8 @@ export default function Sorteio() {
                 </div>
                 <div className={styles.vencedorPremio}>
                   <p className={styles.vencedorPremioLabel}>Prémio</p>
-                  <p className={styles.vencedorPremioValor}>{PRATO_SORTEIO.valor}</p>
-                  <p className={styles.vencedorPremioNome}>{PRATO_SORTEIO.nome}</p>
+                  <p className={styles.vencedorPremioValor}>{vencedorAtual?.premioValor ? `${vencedorAtual.premioValor} MZN` : PRATO_SORTEIO.valor}</p>
+                  <p className={styles.vencedorPremioNome}>{vencedorAtual?.pratoNome ?? PRATO_SORTEIO.nome}</p>
                 </div>
               </div>
             )}
@@ -130,11 +231,11 @@ export default function Sorteio() {
           <div className={styles.painelDireito}>
             <div className={styles.listaHeader}>
               <h2 className={styles.listaTitulo}>Participantes</h2>
-              <span className={styles.listaContagem}>{PARTICIPANTES.length} inscritos</span>
+              <span className={styles.listaContagem}>{participantes.length} inscritos</span>
             </div>
 
             <ul className={styles.lista}>
-              {PARTICIPANTES.map((p) => (
+              {participantes.map((p) => (
                 <li
                   key={p.id}
                   className={`${styles.listaItem} ${vencedor?.id === p.id ? styles.listaItemVencedor : ''}`}

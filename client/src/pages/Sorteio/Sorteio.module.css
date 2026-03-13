@@ -61,6 +61,112 @@
   padding: 6px 12px;
 }
 
+.participarCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.participarTitulo {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--color-text-primary);
+}
+
+.participarLista {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.btnParticipar {
+  align-self: flex-start;
+  margin-top: var(--space-xs);
+  background: var(--color-accent);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition);
+}
+
+.btnParticipar:hover {
+  background: var(--color-accent-dark);
+  transform: translateY(-1px);
+}
+
+.inscricaoForm {
+  margin-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.inscricaoTitulo {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.inscricaoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.inscricaoInput {
+  min-height: 38px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  font-size: 0.88rem;
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  outline: none;
+}
+
+.inscricaoInput:focus {
+  border-color: var(--color-primary);
+}
+
+.btnInscrever {
+  align-self: flex-start;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: white;
+  padding: 9px 16px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btnInscrever:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.inscricaoMsg {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+}
+
 /* ── Layout principal ── */
 .conteudo {
   display: grid;
@@ -574,6 +680,10 @@
   .vencedorPremioNome {
     text-align: center;
     max-width: none;
+  }
+
+  .inscricaoGrid {
+    grid-template-columns: 1fr;
   }
 }
 

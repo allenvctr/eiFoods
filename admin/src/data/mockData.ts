@@ -1,186 +1,70 @@
 /**
- * Mock Data para testes da aplicação Admin
+ * Mock Data para Dashboard da aplicação Admin
  */
 
-import type { Prato, Extra } from '../../../shared/types'
-import type { Order, DashboardStats, RevenueData, PopularDish } from '../types/admin.types'
+import type { ApiPrato } from '../lib/api'
+import type { DashboardStats, RevenueData, PopularDish } from '../types/admin.types'
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Pratos do Menu
-// ═══════════════════════════════════════════════════════════════════════════
+const now = new Date().toISOString()
 
-export const mockPratos: Prato[] = [
+export const mockPratos: ApiPrato[] = [
   {
-    id: 1,
+    _id: 'mock-prato-1',
     nome: 'Arroz + Frango Assado + Batata',
     preco: 250,
-    imagem: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c4?auto=format&fit=crop&w=400&q=80',
-    descricao: 'Frango assado no forno com arroz branco e batata frita crocante'
+    imagem: {
+      url: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c4?auto=format&fit=crop&w=400&q=80',
+      publicId: 'mock/prato-1',
+    },
+    descricao: 'Frango assado no forno com arroz branco e batata frita crocante',
+    disponivel: true,
+    extrasProprios: [],
+    createdAt: now,
+    updatedAt: now,
   },
   {
-    id: 2,
+    _id: 'mock-prato-2',
     nome: 'Arroz + Frango Grelhado + Salada',
     preco: 280,
-    imagem: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80',
-    descricao: 'Frango grelhado suculento com arroz e salada fresca'
+    imagem: {
+      url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80',
+      publicId: 'mock/prato-2',
+    },
+    descricao: 'Frango grelhado suculento com arroz e salada fresca',
+    disponivel: true,
+    extrasProprios: [],
+    createdAt: now,
+    updatedAt: now,
   },
   {
-    id: 3,
+    _id: 'mock-prato-3',
     nome: 'Massa + Frango + Legumes',
     preco: 300,
-    imagem: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80',
-    descricao: 'Massa italiana com frango grelhado e legumes salteados'
+    imagem: {
+      url: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80',
+      publicId: 'mock/prato-3',
+    },
+    descricao: 'Massa italiana com frango grelhado e legumes salteados',
+    disponivel: true,
+    extrasProprios: [],
+    createdAt: now,
+    updatedAt: now,
   },
   {
-    id: 4,
+    _id: 'mock-prato-4',
     nome: 'Arroz de Marisco',
     preco: 450,
-    imagem: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?auto=format&fit=crop&w=400&q=80',
-    descricao: 'Arroz de marisco tradicional moçambicano com camarão, lula e caranguejo'
+    imagem: {
+      url: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?auto=format&fit=crop&w=400&q=80',
+      publicId: 'mock/prato-4',
+    },
+    descricao: 'Arroz de marisco tradicional moçambicano com camarão, lula e caranguejo',
+    disponivel: true,
+    extrasProprios: [],
+    createdAt: now,
+    updatedAt: now,
   },
-  {
-    id: 5,
-    nome: 'Xima + Frango + Molho de Amendoim',
-    preco: 220,
-    imagem: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=400&q=80',
-    descricao: 'Xima de milho com frango e delicioso molho de amendoim'
-  },
-  {
-    id: 6,
-    nome: 'Matapa com Caril',
-    preco: 350,
-    imagem: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80',
-    descricao: 'Matapa tradicional com caril de camarão'
-  }
 ]
-
-// ═══════════════════════════════════════════════════════════════════════════
-// Extras
-// ═══════════════════════════════════════════════════════════════════════════
-
-export const mockExtras: Extra[] = [
-  { id: 'frango', nome: '+ Frango extra', preco: 50 },
-  { id: 'batata', nome: '+ Batata extra', preco: 30 },
-  { id: 'salada', nome: '+ Salada extra', preco: 25 },
-  { id: 'arroz', nome: '+ Arroz extra', preco: 20 },
-  { id: 'refrigerante', nome: '+ Refrigerante', preco: 40 }
-]
-
-// ═══════════════════════════════════════════════════════════════════════════
-// Pedidos
-// ═══════════════════════════════════════════════════════════════════════════
-
-export const mockOrders: Order[] = [
-  {
-    id: 'ORD-001',
-    items: [
-      {
-        prato: mockPratos[0],
-        customizations: {
-          free: ['Com Molho', 'Com Piripiri'],
-          paid: mockExtras[0],
-          salt: 'Normal'
-        },
-        total: 300
-      }
-    ],
-    deliveryDetails: {
-      name: 'João Silva',
-      company: 'Tech Moçambique',
-      location: 'Av. Julius Nyerere, 3º andar',
-      contact: '258841234567'
-    },
-    status: 'pending',
-    total: 300,
-    createdAt: new Date('2026-02-18T10:30:00'),
-    updatedAt: new Date('2026-02-18T10:30:00')
-  },
-  {
-    id: 'ORD-002',
-    items: [
-      {
-        prato: mockPratos[1],
-        customizations: {
-          free: ['Sem Molho'],
-          paid: mockExtras[2],
-          salt: 'Pouco Sal'
-        },
-        total: 305
-      },
-      {
-        prato: mockPratos[2],
-        customizations: {
-          free: ['Com Molho'],
-          paid: null,
-          salt: 'Normal'
-        },
-        total: 300
-      }
-    ],
-    deliveryDetails: {
-      name: 'Maria Santos',
-      company: 'Vodacom',
-      location: 'Av. 25 de Setembro, Edifício JAT',
-      contact: '258843456789'
-    },
-    status: 'preparing',
-    total: 605,
-    createdAt: new Date('2026-02-18T11:15:00'),
-    updatedAt: new Date('2026-02-18T11:20:00')
-  },
-  {
-    id: 'ORD-003',
-    items: [
-      {
-        prato: mockPratos[3],
-        customizations: {
-          free: ['Com Piripiri'],
-          paid: mockExtras[4],
-          salt: 'Normal'
-        },
-        total: 490
-      }
-    ],
-    deliveryDetails: {
-      name: 'Carlos Tembe',
-      company: 'Mcel',
-      location: 'Av. Acordos de Lusaka',
-      contact: '258847891234'
-    },
-    status: 'ready',
-    total: 490,
-    createdAt: new Date('2026-02-18T12:00:00'),
-    updatedAt: new Date('2026-02-18T12:25:00')
-  },
-  {
-    id: 'ORD-004',
-    items: [
-      {
-        prato: mockPratos[4],
-        customizations: {
-          free: ['Com Molho'],
-          paid: null,
-          salt: 'Normal'
-        },
-        total: 220
-      }
-    ],
-    deliveryDetails: {
-      name: 'Ana Macuácua',
-      company: 'BCI',
-      location: 'Av. Karl Marx, 3º andar',
-      contact: '258842345678'
-    },
-    status: 'delivered',
-    total: 220,
-    createdAt: new Date('2026-02-18T09:30:00'),
-    updatedAt: new Date('2026-02-18T10:15:00')
-  }
-]
-
-// ═══════════════════════════════════════════════════════════════════════════
-// Estatísticas do Dashboard
-// ═══════════════════════════════════════════════════════════════════════════
 
 export const mockStats: DashboardStats = {
   todayOrders: 12,
@@ -188,7 +72,7 @@ export const mockStats: DashboardStats = {
   pendingOrders: 3,
   totalDishes: mockPratos.length,
   revenueChange: 12.5,
-  ordersChange: 8.3
+  ordersChange: 8.3,
 }
 
 export const mockRevenueData: RevenueData[] = [
@@ -199,12 +83,12 @@ export const mockRevenueData: RevenueData[] = [
   { date: '2026-02-15', value: 2600 },
   { date: '2026-02-16', value: 1800 },
   { date: '2026-02-17', value: 2200 },
-  { date: '2026-02-18', value: 3850 }
+  { date: '2026-02-18', value: 3850 },
 ]
 
 export const mockPopularDishes: PopularDish[] = [
   { dish: mockPratos[0], orders: 45, revenue: 11250 },
   { dish: mockPratos[1], orders: 38, revenue: 10640 },
   { dish: mockPratos[3], orders: 28, revenue: 12600 },
-  { dish: mockPratos[2], orders: 22, revenue: 6600 }
+  { dish: mockPratos[2], orders: 22, revenue: 6600 },
 ]

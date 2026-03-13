@@ -37,3 +37,9 @@ export const scheduleApi = {
 export const ordersApi = {
   create: (payload) => request('/orders', json('POST', payload)),
 }
+
+export const sorteioApi = {
+  get: () => request('/sorteio'),
+
+  inscrever: (payload) => request('/sorteio/inscricoes', json('POST', payload)),
+}

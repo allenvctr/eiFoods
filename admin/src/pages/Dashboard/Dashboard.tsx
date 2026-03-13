@@ -111,9 +111,9 @@ export function Dashboard() {
         <h2 className={styles.cardTitle}>Pratos Mais Populares</h2>
         <div className={styles.popularDishes}>
           {mockPopularDishes.map((item, index) => (
-            <div key={item.dish.id} className={styles.dishRow}>
+            <div key={item.dish._id} className={styles.dishRow}>
               <div className={styles.dishRank}>#{index + 1}</div>
-              <img src={item.dish.imagem} alt={item.dish.nome} className={styles.dishImagem} />
+              <img src={item.dish.imagem.url} alt={item.dish.nome} className={styles.dishImagem} />
               <div className={styles.dishInfo}>
                 <div className={styles.dishName}>{item.dish.nome}</div>
                 <div className={styles.dishMeta}>

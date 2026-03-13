@@ -21,6 +21,7 @@ const spec = {
     { name: 'Extras', description: 'Extras pagos (globais e exclusivos por prato)' },
     { name: 'Prato do Dia', description: 'Agenda semanal do prato em destaque' },
     { name: 'Encomendas', description: 'Gestão de encomendas de clientes' },
+    { name: 'Sorteio', description: 'Gestão do sorteio diário (participantes e resultado)' },
   ],
 
   // ── Reusable schemas ──────────────────────────────────────────────────────
@@ -145,6 +146,66 @@ const spec = {
           },
           total: { type: 'number', example: 900 },
           createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+
+      SorteioParticipante: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'p-0023' },
+          ref: { type: 'string', example: '#0023' },
+          nome: { type: 'string', example: 'Ana Machava' },
+          empresa: { type: 'string', example: 'Mozal S.A.' },
+          contacto: { type: 'string', example: '258841001001' },
+          inscritoEm: { type: 'string', format: 'date-time' },
+        },
+      },
+
+      SorteioInscricao: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: '2f7f4f31-2c20-4307-8f36-2a8f6d9e4ad1' },
+          nome: { type: 'string', example: 'João Cossa' },
+          empresa: { type: 'string', example: 'EDM' },
+          contacto: { type: 'string', example: '258841004004' },
+          criadoEm: { type: 'string', format: 'date-time' },
+        },
+      },
+
+      SorteioVencedor: {
+        type: 'object',
+        properties: {
+          participanteId: { type: 'string', example: 'p-0023' },
+          ref: { type: 'string', example: '#0023' },
+          nome: { type: 'string', example: 'Ana Machava' },
+          empresa: { type: 'string', example: 'Mozal S.A.' },
+          contacto: { type: 'string', example: '258841001001' },
+          data: { type: 'string', format: 'date-time' },
+          pratoNome: { type: 'string', nullable: true, example: 'Caril de Frango com Arroz Basmati' },
+          premioValor: { type: 'number', nullable: true, example: 290 },
+        },
+      },
+
+      Sorteio: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          inscricoesPendentes: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/SorteioInscricao' },
+          },
+          participantes: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/SorteioParticipante' },
+          },
+          vencedorAtual: {
+            oneOf: [{ $ref: '#/components/schemas/SorteioVencedor' }, { type: 'null' }],
+          },
+          historico: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/SorteioVencedor' },
+          },
           updatedAt: { type: 'string', format: 'date-time' },
         },
       },
@@ -571,6 +632,169 @@ const spec = {
           200: { description: 'Encomenda atualizada', content: { 'application/json': { schema: { $ref: '#/components/schemas/Order' } } } },
           400: { description: 'Status inválido', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
           404: { description: 'Não encontrada', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        },
+      },
+    },
+
+    // ── Sorteio ──────────────────────────────────────────────────────────────
+    '/sorteio': {
+      get: {
+        tags: ['Sorteio'],
+        summary: 'Obter estado atual do sorteio',
+        description: 'Devolve participantes, vencedor atual e histórico de sorteios.',
+        responses: {
+          200: {
+            description: 'Estado do sorteio',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
+          },
+        },
+      },
+    },
+
+    '/sorteio/participantes': {
+      post: {
+        tags: ['Sorteio'],
+        summary: 'Adicionar participante ao sorteio',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['nome'],
+                properties: {
+                  nome: { type: 'string', example: 'João Cossa' },
+                  empresa: { type: 'string', example: 'EDM' },
+                  contacto: { type: 'string', example: '258841004004' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Participante adicionado',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
+          },
+          400: {
+            description: 'Dados inválidos',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          },
+        },
+      },
+    },
+
+    '/sorteio/inscricoes': {
+      post: {
+        tags: ['Sorteio'],
+        summary: 'Criar inscrição pendente no sorteio',
+        description: 'Endpoint público para cliente se inscrever. A inscrição só vira participante válido após confirmação de pagamento no admin.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['nome', 'contacto'],
+                properties: {
+                  nome: { type: 'string', example: 'João Cossa' },
+                  empresa: { type: 'string', example: 'EDM' },
+                  contacto: { type: 'string', example: '258841004004' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Inscrição criada',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
+          },
+          400: {
+            description: 'Dados inválidos ou inscrição duplicada',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          },
+        },
+      },
+    },
+
+    '/sorteio/inscricoes/{id}/confirmar': {
+      post: {
+        tags: ['Sorteio'],
+        summary: 'Confirmar pagamento e ativar participante',
+        description: 'Admin confirma o pagamento; a inscrição pendente passa a participante válido para sorteio.',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          200: {
+            description: 'Inscrição confirmada',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
+          },
+          404: {
+            description: 'Inscrição não encontrada',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          },
+        },
+      },
+    },
+
+    '/sorteio/inscricoes/{id}': {
+      delete: {
+        tags: ['Sorteio'],
+        summary: 'Rejeitar/cancelar inscrição pendente',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          200: {
+            description: 'Inscrição removida',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
+          },
+        },
+      },
+    },
+
+    '/sorteio/participantes/{id}': {
+      delete: {
+        tags: ['Sorteio'],
+        summary: 'Remover participante do sorteio',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          200: {
+            description: 'Participante removido',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
+          },
+          400: {
+            description: 'ID inválido',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          },
+        },
+      },
+    },
+
+    '/sorteio/realizar': {
+      post: {
+        tags: ['Sorteio'],
+        summary: 'Realizar sorteio e publicar vencedor atual',
+        responses: {
+          200: {
+            description: 'Sorteio realizado',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
+          },
+          400: {
+            description: 'Sem participantes para sortear',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          },
+        },
+      },
+    },
+
+    '/sorteio/reset': {
+      post: {
+        tags: ['Sorteio'],
+        summary: 'Limpar resultado atual do sorteio',
+        responses: {
+          200: {
+            description: 'Resultado atual removido',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
+          },
         },
       },
     },

@@ -77,6 +77,43 @@ export interface ApiSchedule {
   updatedAt: string
 }
 
+export interface ApiSorteioParticipante {
+  id: string
+  ref: string
+  nome: string
+  empresa: string
+  contacto: string
+  inscritoEm: string
+}
+
+export interface ApiSorteioInscricao {
+  id: string
+  nome: string
+  empresa: string
+  contacto: string
+  criadoEm: string
+}
+
+export interface ApiSorteioVencedor {
+  participanteId: string
+  ref: string
+  nome: string
+  empresa: string
+  contacto: string
+  data: string
+  pratoNome: string | null
+  premioValor: number | null
+}
+
+export interface ApiSorteio {
+  _id: string
+  inscricoesPendentes: ApiSorteioInscricao[]
+  participantes: ApiSorteioParticipante[]
+  vencedorAtual: ApiSorteioVencedor | null
+  historico: ApiSorteioVencedor[]
+  updatedAt: string
+}
+
 // ── Request helper ────────────────────────────────────────────────────────────
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -172,4 +209,29 @@ export const ordersApi = {
 
   updateStatus: (id: string, status: ApiOrder['status']) =>
     request<ApiOrder>(`/orders/${id}/status`, json('PATCH', { status })),
+}
+
+// ── Sorteio ──────────────────────────────────────────────────────────────────
+
+export const sorteioApi = {
+  get: () =>
+    request<ApiSorteio>('/sorteio'),
+
+  addParticipante: (payload: { nome: string; empresa?: string; contacto?: string }) =>
+    request<ApiSorteio>('/sorteio/participantes', json('POST', payload)),
+
+  confirmarInscricao: (id: string) =>
+    request<ApiSorteio>(`/sorteio/inscricoes/${id}/confirmar`, json('POST', {})),
+
+  rejeitarInscricao: (id: string) =>
+    request<ApiSorteio>(`/sorteio/inscricoes/${id}`, { method: 'DELETE' }),
+
+  removeParticipante: (id: string) =>
+    request<ApiSorteio>(`/sorteio/participantes/${id}`, { method: 'DELETE' }),
+
+  realizar: () =>
+    request<ApiSorteio>('/sorteio/realizar', json('POST', {})),
+
+  reset: () =>
+    request<ApiSorteio>('/sorteio/reset', json('POST', {})),
 }

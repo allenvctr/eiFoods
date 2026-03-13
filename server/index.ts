@@ -9,6 +9,7 @@ import pratosRouter from './routes/pratos.ts'
 import extrasRouter from './routes/extras.ts'
 import pratoDoDiaRouter from './routes/pratoDoDia.ts'
 import ordersRouter from './routes/orders.ts'
+import sorteioRouter from './routes/sorteio.ts'
 import swaggerSpec from './lib/swagger.ts'
 
 const app = express()
@@ -48,6 +49,7 @@ app.use('/api/pratos', pratosRouter)
 app.use('/api/extras', extrasRouter)
 app.use('/api/prato-do-dia', pratoDoDiaRouter)
 app.use('/api/orders', ordersRouter)
+app.use('/api/sorteio', sorteioRouter)
 
 // ── API Docs (Swagger UI) ────────────────────────────────────────────────────
 

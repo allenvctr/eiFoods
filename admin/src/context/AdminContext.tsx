@@ -3,7 +3,7 @@
  * Carrega dados da API no mount e expõe funções assíncronas para CRUD.
  */
 
-import React, { createContext, useContext, useEffect, useReducer, useCallback } from 'react'
+import { createContext, useContext, useEffect, useReducer, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import {
   pratosApi, extrasApi, scheduleApi, ordersApi,
