@@ -5,6 +5,7 @@ import Navbar from '../../components/Navbar/Navbar'
 import styles from './OrderSummary.module.css'
 
 const TAXA_ENTREGA = 50
+const TAXA_FORA_DO_DIA = 50
 
 function IconEditar() {
   return (
@@ -47,7 +48,9 @@ export default function OrderSummary() {
   if (orderItems.length === 0) return null
 
   const subtotal = orderItems.reduce((acc, item) => acc + item.total, 0)
-  const total = subtotal + TAXA_ENTREGA
+  const itensForaDoDia = orderItems.filter((item) => item.isForaDoDia).length
+  const taxaForaDoDia = itensForaDoDia * TAXA_FORA_DO_DIA
+  const total = subtotal + TAXA_ENTREGA + taxaForaDoDia
 
   function handleRemover(index) {
     dispatch({ type: 'REMOVE_ITEM', payload: index })
@@ -167,6 +170,12 @@ export default function OrderSummary() {
                   <span className={styles.resumoLabel}>Taxa de entrega</span>
                   <span className={styles.resumoValor}>{TAXA_ENTREGA} MZN</span>
                 </div>
+                {itensForaDoDia > 0 && (
+                  <div className={styles.resumoLinha}>
+                    <span className={styles.resumoLabel}>Taxa prato fora do dia ({itensForaDoDia} {itensForaDoDia === 1 ? 'item' : 'itens'})</span>
+                    <span className={styles.resumoValor}>{taxaForaDoDia} MZN</span>
+                  </div>
+                )}
               </div>
 
               <div className={styles.resumoTotal}>

@@ -28,6 +28,7 @@ export default function Navbar({ showCta = false }) {
 
         <nav className={styles.navDesktop}>
           <span onClick={() => navigate('/')}>Início</span>
+          <span onClick={() => navigate('/empresa')}>Empresa</span>
           <span onClick={() => navigate('/menu')}>Menu</span>
           <span onClick={() => navigate('/sorteio')}>Sorteio</span>
         </nav>
@@ -70,6 +71,7 @@ export default function Navbar({ showCta = false }) {
           <div className={styles.overlay} onClick={() => setMenuAberto(false)} />
           <nav className={styles.navMobile}>
             <span onClick={() => handleNavegar('/')}>Início</span>
+            <span onClick={() => handleNavegar('/empresa')}>Empresa</span>
             <span onClick={() => handleNavegar('/menu')}>Menu</span>
             <span onClick={() => handleNavegar('/sorteio')}>Sorteio</span>
             {showCta && (

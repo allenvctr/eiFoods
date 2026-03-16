@@ -6,10 +6,10 @@
 import { createContext, useContext, useEffect, useReducer, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import {
-  pratosApi, extrasApi, scheduleApi, ordersApi,
-  type ApiPrato, type ApiExtra, type ApiOrder, type ApiSchedule,
+  pratosApi, extrasApi, scheduleApi, ordersApi, empresasApi,
+  type ApiPrato, type ApiExtra, type ApiOrder, type ApiSchedule, type ApiEmpresa,
 } from '../lib/api'
-import type { DishFormData, ExtraFormData } from '../types/admin.types'
+import type { DishFormData, ExtraFormData, EmpresaFormData, EmpresaMenuFormData } from '../types/admin.types'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // State & Actions
@@ -19,6 +19,7 @@ interface AdminState {
   pratos: ApiPrato[]
   extras: ApiExtra[]
   orders: ApiOrder[]
+  empresas: ApiEmpresa[]
   schedule: ApiSchedule | null
   loading: boolean
   error: string | null
@@ -38,6 +39,10 @@ type AdminAction =
   | { type: 'LOAD_ORDERS'; payload: ApiOrder[] }
   | { type: 'UPDATE_ORDER'; payload: ApiOrder }
   | { type: 'DELETE_ORDER'; payload: string }
+  | { type: 'LOAD_EMPRESAS'; payload: ApiEmpresa[] }
+  | { type: 'ADD_EMPRESA'; payload: ApiEmpresa }
+  | { type: 'UPDATE_EMPRESA'; payload: ApiEmpresa }
+  | { type: 'DELETE_EMPRESA'; payload: string }
   | { type: 'SET_SCHEDULE'; payload: ApiSchedule }
 
 interface AdminContextType {
@@ -60,6 +65,16 @@ interface AdminContextType {
   loadOrders: (status?: string) => Promise<void>
   updateOrderStatus: (id: string, status: ApiOrder['status']) => Promise<void>
   deleteOrder: (id: string) => Promise<void>
+  // Empresas
+  loadEmpresas: () => Promise<void>
+  createEmpresa: (data: EmpresaFormData) => Promise<void>
+  updateEmpresa: (id: string, data: Partial<EmpresaFormData>) => Promise<void>
+  deleteEmpresa: (id: string) => Promise<void>
+  regenerateEmpresaCodes: (id: string) => Promise<void>
+  toggleEmpresaCode: (empresaId: string, codigoId: string, ativo: boolean) => Promise<void>
+  createEmpresaMenu: (empresaId: string, data: EmpresaMenuFormData) => Promise<void>
+  updateEmpresaMenu: (empresaId: string, menuId: string, data: Partial<EmpresaMenuFormData>) => Promise<void>
+  deleteEmpresaMenu: (empresaId: string, menuId: string) => Promise<void>
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -70,6 +85,7 @@ const initialState: AdminState = {
   pratos: [],
   extras: [],
   orders: [],
+  empresas: [],
   schedule: null,
   loading: true,
   error: null,
@@ -82,6 +98,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
     case 'LOAD_PRATOS':   return { ...state, pratos: action.payload }
     case 'LOAD_EXTRAS':   return { ...state, extras: action.payload }
     case 'LOAD_ORDERS':   return { ...state, orders: action.payload }
+    case 'LOAD_EMPRESAS': return { ...state, empresas: action.payload }
     case 'SET_SCHEDULE':  return { ...state, schedule: action.payload }
 
     case 'ADD_PRATO':
@@ -102,6 +119,13 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
       return { ...state, orders: state.orders.map(o => o._id === action.payload._id ? action.payload : o) }
     case 'DELETE_ORDER':
       return { ...state, orders: state.orders.filter(o => o._id !== action.payload) }
+
+    case 'ADD_EMPRESA':
+      return { ...state, empresas: [action.payload, ...state.empresas] }
+    case 'UPDATE_EMPRESA':
+      return { ...state, empresas: state.empresas.map(e => e._id === action.payload._id ? action.payload : e) }
+    case 'DELETE_EMPRESA':
+      return { ...state, empresas: state.empresas.filter(e => e._id !== action.payload) }
 
     default: return state
   }
@@ -223,6 +247,61 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'DELETE_ORDER', payload: id })
   }, [])
 
+  // ── Empresas ──────────────────────────────────────────────────────────────
+  const loadEmpresas = useCallback(async () => {
+    dispatch({ type: 'LOAD_EMPRESAS', payload: await empresasApi.list() })
+  }, [])
+
+  const createEmpresa = useCallback(async (data: EmpresaFormData) => {
+    const empresa = await empresasApi.create({
+      nome: data.nome,
+      ativo: data.ativo,
+      nrFuncionariosPagos: data.nrFuncionariosPagos,
+      menuNome: data.menuNome,
+      pratoIds: data.pratoIds,
+    })
+    dispatch({ type: 'ADD_EMPRESA', payload: empresa })
+  }, [])
+
+  const updateEmpresa = useCallback(async (id: string, data: Partial<EmpresaFormData>) => {
+    const empresa = await empresasApi.update(id, {
+      nome: data.nome,
+      ativo: data.ativo,
+      nrFuncionariosPagos: data.nrFuncionariosPagos,
+    })
+    dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
+  }, [])
+
+  const deleteEmpresa = useCallback(async (id: string) => {
+    await empresasApi.delete(id)
+    dispatch({ type: 'DELETE_EMPRESA', payload: id })
+  }, [])
+
+  const regenerateEmpresaCodes = useCallback(async (id: string) => {
+    const empresa = await empresasApi.regenerateCodes(id)
+    dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
+  }, [])
+
+  const toggleEmpresaCode = useCallback(async (empresaId: string, codigoId: string, ativo: boolean) => {
+    const empresa = await empresasApi.toggleCodigo(empresaId, codigoId, ativo)
+    dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
+  }, [])
+
+  const createEmpresaMenu = useCallback(async (empresaId: string, data: EmpresaMenuFormData) => {
+    const empresa = await empresasApi.createMenu(empresaId, data)
+    dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
+  }, [])
+
+  const updateEmpresaMenu = useCallback(async (empresaId: string, menuId: string, data: Partial<EmpresaMenuFormData>) => {
+    const empresa = await empresasApi.updateMenu(empresaId, menuId, data)
+    dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
+  }, [])
+
+  const deleteEmpresaMenu = useCallback(async (empresaId: string, menuId: string) => {
+    const empresa = await empresasApi.deleteMenu(empresaId, menuId)
+    dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
+  }, [])
+
   return (
     <AdminContext.Provider value={{
       state,
@@ -230,6 +309,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       loadExtras, createExtra, updateExtra, deleteExtra,
       loadSchedule, setDayPrato,
       loadOrders, updateOrderStatus, deleteOrder,
+      loadEmpresas, createEmpresa, updateEmpresa, deleteEmpresa,
+      regenerateEmpresaCodes, toggleEmpresaCode,
+      createEmpresaMenu, updateEmpresaMenu, deleteEmpresaMenu,
     }}>
       {children}
     </AdminContext.Provider>

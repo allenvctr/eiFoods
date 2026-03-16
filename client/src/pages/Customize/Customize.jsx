@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { extrasApi } from '../../api'
+import { extrasApi, scheduleApi } from '../../api'
 import { useOrder } from '../../context/useOrder'
 import { useToast } from '../../context/ToastContext'
 import Navbar from '../../components/Navbar/Navbar'
@@ -16,12 +16,17 @@ export default function Customize() {
 
   const editIndex = location.state?.editIndex ?? null
   const [extrasDisponiveis, setExtrasDisponiveis] = useState([])
+  const [pratoDoDiaId, setPratoDoDiaId] = useState(null)
 
   useEffect(() => {
     if (selectedDish?._id) {
       extrasApi.listForPrato(selectedDish._id).then(setExtrasDisponiveis).catch(() => {})
     }
   }, [selectedDish?._id])
+
+  useEffect(() => {
+    scheduleApi.getHoje().then((d) => setPratoDoDiaId(d?.prato?._id ?? null)).catch(() => setPratoDoDiaId(null))
+  }, [])
 
   useEffect(() => {
     if (!selectedDish) navigate('/menu')
@@ -33,6 +38,7 @@ export default function Customize() {
   const extrasSelecionados = Array.isArray(customizations.paid) ? customizations.paid : []
   const totalExtras = extrasSelecionados.reduce((acc, e) => acc + e.preco, 0)
   const totalPrato = selectedDish.preco + totalExtras
+  const isForaDoDia = Boolean(pratoDoDiaId) && selectedDish._id !== pratoDoDiaId
 
   // Toggle exclusivo dentro de um grupo (molho ou piripiri)
   function toggleExclusivo(opcao, grupo) {
@@ -61,6 +67,8 @@ export default function Customize() {
     const novoItem = {
       prato: selectedDish,
       customizations: { ...customizations, paid: extrasSelecionados },
+      isForaDoDia,
+      foraDoDiaTaxa: isForaDoDia ? 50 : 0,
       total: totalPrato,
     }
 
@@ -210,6 +218,13 @@ export default function Customize() {
           </div>
 
         </div>
+
+        {isForaDoDia && (
+          <div className={styles.extrasTotal}>
+            <span>Taxa prato fora do dia</span>
+            <strong>+50 MZN (cobrada no checkout)</strong>
+          </div>
+        )}
 
         <button className={styles.btnAdicionar} onClick={handleAdicionar}>
           {editIndex !== null ? '✏️ Guardar alterações' : `Adicionar ao pedido · ${totalPrato} MZN`}

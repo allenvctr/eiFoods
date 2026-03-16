@@ -25,7 +25,7 @@ function SkeletonCard() {
 export default function Menu() {
   const navigate = useNavigate()
   const { state, dispatch } = useOrder()
-  const { orderItems } = state
+  const { orderItems, selectedEmpresa } = state
   const [pratos, setPratos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -45,13 +45,21 @@ export default function Menu() {
         if (!active) return
         setPratoDoDia(hoje?.prato ?? null)
 
+        const companyPratoIds = selectedEmpresa?.menu?.pratoIds
+          ? selectedEmpresa.menu.pratoIds.map((p) => (typeof p === 'string' ? p : p._id))
+          : null
+
+        const pratosBase = companyPratoIds
+          ? listaPratos.filter((p) => companyPratoIds.includes(p._id))
+          : listaPratos
+
         const hojeId = hoje?.prato?._id
         if (!hojeId) {
-          setPratos(listaPratos)
+          setPratos(pratosBase)
           return
         }
 
-        const ordenados = [...listaPratos].sort((a, b) => {
+        const ordenados = [...pratosBase].sort((a, b) => {
           if (a._id === hojeId) return -1
           if (b._id === hojeId) return 1
           return 0
@@ -69,7 +77,7 @@ export default function Menu() {
     return () => {
       active = false
     }
-  }, [])
+  }, [selectedEmpresa])
 
   const pratosFiltrados = pratos.filter(p =>
     p.nome.toLowerCase().includes(busca.toLowerCase()) ||
@@ -127,6 +135,15 @@ export default function Menu() {
           <div className={styles.todayBarInner}>
             <span className={styles.todayBadge}>Prato do dia</span>
             <p className={styles.todayText}>{pratoDoDia.nome}</p>
+          </div>
+        </div>
+      )}
+
+      {selectedEmpresa && (
+        <div className={styles.todayBar}>
+          <div className={styles.todayBarInner}>
+            <span className={styles.todayBadge}>Empresa</span>
+            <p className={styles.todayText}>{selectedEmpresa.empresaNome}</p>
           </div>
         </div>
       )}

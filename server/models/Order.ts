@@ -19,6 +19,8 @@ export interface IOrderItem {
   pratoPreco: number
   customizations: IOrderCustomizations
   extras: IOrderExtra[]
+  isForaDoDia: boolean
+  foraDoDiaTaxa: number
   total: number
 }
 
@@ -30,9 +32,13 @@ export interface IDeliveryDetails {
 }
 
 export interface IOrder extends Document {
+  empresaId?: Types.ObjectId
+  empresaCodigo?: string
   items: IOrderItem[]
   deliveryDetails: IDeliveryDetails
   status: OrderStatus
+  foraDoDiaCount: number
+  taxaForaDoDia: number
   total: number
   createdAt: Date
   updatedAt: Date
@@ -62,6 +68,8 @@ const OrderItemSchema = new Schema<IOrderItem>(
     pratoPreco:     { type: Number, required: true, min: 0 },
     customizations: { type: OrderCustomizationsSchema, required: true },
     extras:         { type: [OrderExtraSchema], default: [] },
+    isForaDoDia:    { type: Boolean, default: false },
+    foraDoDiaTaxa:  { type: Number, required: true, min: 0, default: 0 },
     total:          { type: Number, required: true, min: 0 },
   },
   { _id: false }
@@ -79,9 +87,13 @@ const DeliveryDetailsSchema = new Schema<IDeliveryDetails>(
 
 const OrderSchema = new Schema<IOrder>(
   {
+    empresaId:       { type: Schema.Types.ObjectId, ref: 'Empresa', required: false },
+    empresaCodigo:   { type: String, required: false, trim: true },
     items:           { type: [OrderItemSchema], required: true },
     deliveryDetails: { type: DeliveryDetailsSchema, required: true },
     status:          { type: String, enum: ['pending', 'preparing', 'ready', 'delivered', 'cancelled'], default: 'pending' },
+    foraDoDiaCount:  { type: Number, required: true, min: 0, default: 0 },
+    taxaForaDoDia:   { type: Number, required: true, min: 0, default: 0 },
     total:           { type: Number, required: true, min: 0 },
   },
   { timestamps: true }

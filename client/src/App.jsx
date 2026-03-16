@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import OrderProvider from './context/OrderProvider'
 import { ToastProvider } from './context/ToastContext'
 import Home from './pages/Home/Home'
+import Empresa from './pages/Empresa/Empresa'
 import Menu from './pages/Menu/Menu'
 import Customize from './pages/Customize/Customize'
 import OrderSummary from './pages/OrderSummary/OrderSummary'
@@ -16,6 +17,7 @@ export default function App() {
         <ToastProvider>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/empresa" element={<Empresa />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/customize" element={<Customize />} />
           <Route path="/order-summary" element={<OrderSummary />} />

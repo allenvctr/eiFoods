@@ -46,6 +46,8 @@ export interface ApiOrderItem {
   pratoPreco: number
   customizations: { free: string[]; salt: string }
   extras: ApiOrderExtra[]
+  isForaDoDia: boolean
+  foraDoDiaTaxa: number
   total: number
 }
 
@@ -58,12 +60,52 @@ export interface ApiDeliveryDetails {
 
 export interface ApiOrder {
   _id: string
+  empresaId?: string
+  empresaCodigo?: string
   items: ApiOrderItem[]
   deliveryDetails: ApiDeliveryDetails
   status: 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+  foraDoDiaCount: number
+  taxaForaDoDia: number
   total: number
   createdAt: string
   updatedAt: string
+}
+
+export interface ApiEmpresaMenu {
+  _id: string
+  nome: string
+  ativo: boolean
+  pratoIds: ApiPrato[] | string[]
+}
+
+export interface ApiEmpresaCodigo {
+  _id: string
+  code: string
+  ativo: boolean
+  maxUsosDia: number
+  usosDiaAtual: number
+  ultimoResetDia: string
+}
+
+export interface ApiEmpresa {
+  _id: string
+  nome: string
+  ativo: boolean
+  nrFuncionariosPagos: number
+  menus: ApiEmpresaMenu[]
+  codigos: ApiEmpresaCodigo[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiEmpresaCodigoValidation {
+  empresaId: string
+  empresaNome: string
+  codigoId: string
+  codigo: string
+  usosRestantesHoje: number
+  menu: ApiEmpresaMenu
 }
 
 export interface ApiDiaAgendado {
@@ -205,10 +247,48 @@ export const ordersApi = {
   create: (payload: {
     items: Array<{ pratoId: string; customizations: { free: string[]; salt: string }; extraIds: string[] }>
     deliveryDetails: ApiDeliveryDetails
+    empresaCodigo?: string
   }) => request<ApiOrder>('/orders', json('POST', payload)),
 
   updateStatus: (id: string, status: ApiOrder['status']) =>
     request<ApiOrder>(`/orders/${id}/status`, json('PATCH', { status })),
+}
+
+// ── Empresas ────────────────────────────────────────────────────────────────
+
+export const empresasApi = {
+  list: () =>
+    request<ApiEmpresa[]>('/empresas'),
+
+  get: (id: string) =>
+    request<ApiEmpresa>(`/empresas/${id}`),
+
+  create: (data: { nome: string; ativo?: boolean; nrFuncionariosPagos: number; menuNome?: string; pratoIds?: string[] }) =>
+    request<ApiEmpresa>('/empresas', json('POST', data)),
+
+  update: (id: string, data: Partial<{ nome: string; ativo: boolean; nrFuncionariosPagos: number }>) =>
+    request<ApiEmpresa>(`/empresas/${id}`, json('PUT', data)),
+
+  delete: (id: string) =>
+    request<{ message: string }>(`/empresas/${id}`, { method: 'DELETE' }),
+
+  regenerateCodes: (id: string) =>
+    request<ApiEmpresa>(`/empresas/${id}/regenerate-codes`, json('POST', {})),
+
+  toggleCodigo: (empresaId: string, codigoId: string, ativo: boolean) =>
+    request<ApiEmpresa>(`/empresas/${empresaId}/codigos/${codigoId}/ativo`, json('PATCH', { ativo })),
+
+  createMenu: (empresaId: string, data: { nome: string; pratoIds: string[]; ativo?: boolean }) =>
+    request<ApiEmpresa>(`/empresas/${empresaId}/menus`, json('POST', data)),
+
+  updateMenu: (empresaId: string, menuId: string, data: Partial<{ nome: string; pratoIds: string[]; ativo: boolean }>) =>
+    request<ApiEmpresa>(`/empresas/${empresaId}/menus/${menuId}`, json('PUT', data)),
+
+  deleteMenu: (empresaId: string, menuId: string) =>
+    request<ApiEmpresa>(`/empresas/${empresaId}/menus/${menuId}`, { method: 'DELETE' }),
+
+  validateCode: (code: string) =>
+    request<ApiEmpresaCodigoValidation>(`/empresas/codigo/${encodeURIComponent(code.trim().toUpperCase())}`),
 }
 
 // ── Sorteio ──────────────────────────────────────────────────────────────────

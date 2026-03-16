@@ -12,5 +12,7 @@ export const initialState = {
     location: '',
     contact: '',
   },
+  selectedEmpresa: null,
+  empresaCodigo: '',
   orderId: null,
 }

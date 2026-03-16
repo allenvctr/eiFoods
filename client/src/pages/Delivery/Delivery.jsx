@@ -61,9 +61,12 @@ export default function Delivery() {
             free: item.customizations.free ?? [],
             salt: item.customizations.salt ?? 'Normal',
           },
-          extraIds: item.customizations.paid?._id ? [item.customizations.paid._id] : [],
+          extraIds: Array.isArray(item.customizations.paid)
+            ? item.customizations.paid.map((extra) => extra._id)
+            : item.customizations.paid?._id ? [item.customizations.paid._id] : [],
         })),
         deliveryDetails: form,
+        empresaCodigo: state.empresaCodigo || undefined,
       };
       const order = await ordersApi.create(payload);
       dispatch({ type: "SET_ORDER_ID", payload: order._id });

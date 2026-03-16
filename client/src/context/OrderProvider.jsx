@@ -19,6 +19,10 @@ function orderReducer(state, action) {
       return { ...state, orderItems: state.orderItems.filter((_, i) => i !== action.payload) }
     case 'SET_DELIVERY_DETAILS':
       return { ...state, deliveryDetails: { ...state.deliveryDetails, ...action.payload } }
+    case 'SET_EMPRESA_CODIGO':
+      return { ...state, empresaCodigo: action.payload }
+    case 'SET_EMPRESA_SELECIONADA':
+      return { ...state, selectedEmpresa: action.payload }
     case 'SET_ORDER_ID':
       return { ...state, orderId: action.payload }
     case 'RESET_ORDER':

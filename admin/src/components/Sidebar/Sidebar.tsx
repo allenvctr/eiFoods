@@ -36,6 +36,17 @@ function IcoExtras() {
   )
 }
 
+function IcoEmpresas() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 21h18"/>
+      <path d="M5 21V7l7-4 7 4v14"/>
+      <path d="M9 10h6"/>
+      <path d="M9 14h6"/>
+    </svg>
+  )
+}
+
 function IcoPratoDoDia() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -80,6 +91,7 @@ const navGroups = [
     items: [
       { path: '/dishes',       label: 'Pratos',      icon: <IcoPratos /> },
       { path: '/extras',       label: 'Extras',       icon: <IcoExtras /> },
+      { path: '/empresas',     label: 'Empresas',     icon: <IcoEmpresas /> },
       { path: '/prato-do-dia', label: 'Prato do Dia', icon: <IcoPratoDoDia /> },
     ]
   },

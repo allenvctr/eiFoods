@@ -5,6 +5,7 @@ import { Dashboard } from './pages/Dashboard/Dashboard'
 import { Dishes } from './pages/Dishes/Dishes'
 import { Orders } from './pages/Orders/Orders'
 import { Extras } from './pages/Extras/Extras'
+import { Empresas } from './pages/Empresas/Empresas'
 import { Settings } from './pages/Settings/Settings'
 import { PratoDoDia } from './pages/PratoDoDia/PratoDoDia'
 import { SorteioAdmin } from './pages/SorteioAdmin/SorteioAdmin'
@@ -22,6 +23,7 @@ function App() {
               <Route path="/dishes" element={<Dishes />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/extras" element={<Extras />} />
+              <Route path="/empresas" element={<Empresas />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/prato-do-dia" element={<PratoDoDia />} />
               <Route path="/sorteio" element={<SorteioAdmin />} />

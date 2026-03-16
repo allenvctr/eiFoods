@@ -95,6 +95,8 @@ export interface Customizacoes {
 export interface OrderItem {
   prato: Prato
   customizations: Customizacoes
+  isForaDoDia?: boolean
+  foraDoDiaTaxa?: number
   total: number
 }
 
@@ -106,6 +108,42 @@ export interface DeliveryDetails {
   company: string
   location: string
   contact: string
+}
+
+export interface EmpresaMenu {
+  _id: string
+  nome: string
+  ativo: boolean
+  pratoIds: Prato[] | string[]
+}
+
+export interface EmpresaCodigo {
+  _id: string
+  code: string
+  ativo: boolean
+  maxUsosDia: number
+  usosDiaAtual: number
+  ultimoResetDia: string
+}
+
+export interface Empresa {
+  _id: string
+  nome: string
+  ativo: boolean
+  nrFuncionariosPagos: number
+  menus: EmpresaMenu[]
+  codigos: EmpresaCodigo[]
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export interface EmpresaCodigoValidation {
+  empresaId: string
+  empresaNome: string
+  codigoId: string
+  codigo: string
+  usosRestantesHoje: number
+  menu: EmpresaMenu
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -120,6 +158,8 @@ export interface OrderState {
   customizations: Customizacoes
   orderItems: OrderItem[]
   deliveryDetails: DeliveryDetails
+  selectedEmpresa: EmpresaCodigoValidation | null
+  empresaCodigo: string
 }
 
 /**
@@ -131,6 +171,8 @@ export type OrderAction =
   | { type: 'ADD_TO_ORDER'; payload: OrderItem }
   | { type: 'REMOVE_ITEM'; payload: number }
   | { type: 'SET_DELIVERY_DETAILS'; payload: Partial<DeliveryDetails> }
+  | { type: 'SET_EMPRESA_CODIGO'; payload: string }
+  | { type: 'SET_EMPRESA_SELECIONADA'; payload: EmpresaCodigoValidation | null }
   | { type: 'RESET_ORDER' }
 
 // ═══════════════════════════════════════════════════════════════════════════

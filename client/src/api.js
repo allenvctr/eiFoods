@@ -38,6 +38,10 @@ export const ordersApi = {
   create: (payload) => request('/orders', json('POST', payload)),
 }
 
+export const empresasApi = {
+  validateCode: (code) => request(`/empresas/codigo/${encodeURIComponent(code.trim().toUpperCase())}`),
+}
+
 export const sorteioApi = {
   get: () => request('/sorteio'),
 
