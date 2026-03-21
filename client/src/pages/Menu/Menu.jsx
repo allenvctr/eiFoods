@@ -1,11 +1,104 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOrder } from '../../context/useOrder'
 import Navbar from '../../components/Navbar/Navbar'
+import Footer from '../../components/Footer/Footer'
 import { pratosApi, scheduleApi } from '../../api'
 import styles from './Menu.module.css'
 
 const DIAS = ['Domingo', 'Segunda-Feira', 'Terça-Feira', 'Quarta-Feira', 'Quinta-Feira', 'Sexta-Feira', 'Sábado']
+
+function PratosSlideshow({ pratos, pratoDoDia, onSelecionar }) {
+  const [current, setCurrent] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const [animDir, setAnimDir] = useState('next')
+  const timerRef = useRef(null)
+
+  const total = pratos.length
+
+  const goTo = useCallback((index, dir = 'next') => {
+    setAnimDir(dir)
+    setCurrent((index + total) % total)
+  }, [total])
+
+  const next = useCallback(() => goTo(current + 1, 'next'), [current, goTo])
+  const prev = useCallback(() => goTo(current - 1, 'prev'), [current, goTo])
+
+  useEffect(() => {
+    if (paused || total < 2) return
+    timerRef.current = setInterval(next, 4500)
+    return () => clearInterval(timerRef.current)
+  }, [paused, next, total])
+
+  if (total === 0) return null
+
+  const prato = pratos[current]
+  const isHoje = pratoDoDia?._id === prato._id
+  const imgUrl = prato.imagem?.url ?? prato.imagem
+
+  return (
+    <section
+      className={styles.slideshow}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className={`${styles.slide} ${styles[`slide${animDir}`]}`} key={prato._id}>
+        {imgUrl && (
+          <img src={imgUrl} alt={prato.nome} className={styles.slideImg} />
+        )}
+        <div className={styles.slideOverlay} />
+        <div className={styles.slideContent}>
+          <div className={styles.slideBadges}>
+            {isHoje && <span className={styles.slideBadgeHoje}>⭐ Prato do Dia</span>}
+            <span className={styles.slideBadgePreco}>{prato.preco} MZN</span>
+          </div>
+          <h2 className={styles.slideNome}>{prato.nome}</h2>
+          {prato.descricao && (
+            <p className={styles.slideDescricao}>{prato.descricao}</p>
+          )}
+          <button
+            className={styles.slideBtnSelecionar}
+            onClick={() => onSelecionar(prato)}
+          >
+            Selecionar prato
+          </button>
+        </div>
+      </div>
+
+      {total > 1 && (
+        <>
+          <button className={`${styles.slideArrow} ${styles.slideArrowPrev}`} onClick={prev} aria-label="Anterior">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <button className={`${styles.slideArrow} ${styles.slideArrowNext}`} onClick={next} aria-label="Próximo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+          <div className={styles.slideDots}>
+            {pratos.map((_, i) => (
+              <button
+                key={i}
+                className={`${styles.slideDot} ${i === current ? styles.slideDotActive : ''}`}
+                onClick={() => goTo(i, i > current ? 'next' : 'prev')}
+                aria-label={`Slide ${i + 1}`}
+              />
+            ))}
+          </div>
+          <div className={styles.slideProgress}>
+            <div
+              className={styles.slideProgressBar}
+              style={{ animationPlayState: paused ? 'paused' : 'running' }}
+              key={current}
+            />
+          </div>
+        </>
+      )}
+    </section>
+  )
+}
 
 function SkeletonCard() {
   return (
@@ -109,32 +202,49 @@ export default function Menu() {
         <div className={styles.heroDecor} />
       </section>
 
-      {/* Barra de pesquisa — fora do grid, sempre no topo */}
-      <div className={styles.searchSection}>
-        <div className={styles.searchWrap}>
-          <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          <input
-            className={styles.searchInput}
-            type="text"
-            placeholder="Pesquisar pratos..."
-            value={busca}
-            onChange={e => setBusca(e.target.value)}
+      {/* Slideshow + Search agrupados */}
+      <div className={`${styles.slideshowOuter} ${!loading && !error && pratos.length > 0 ? styles.slideshowOuterActive : ''}`}>
+        {!loading && !error && pratos.length > 0 && (
+          <PratosSlideshow
+            pratos={pratos}
+            pratoDoDia={pratoDoDia}
+            onSelecionar={handleSelecionar}
           />
-          {busca && (
-            <button className={styles.searchClear} onClick={() => setBusca('')} aria-label="Limpar">
-              ✕
-            </button>
-          )}
+        )}
+
+        {/* Barra de pesquisa */}
+        <div className={styles.searchSection}>
+          <div className={styles.searchWrap}>
+            <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              className={styles.searchInput}
+              type="text"
+              placeholder="Pesquisar pratos..."
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+            />
+            {busca && (
+              <button className={styles.searchClear} onClick={() => setBusca('')} aria-label="Limpar">
+                ✕
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {pratoDoDia && (
-        <div className={styles.todayBar}>
-          <div className={styles.todayBarInner}>
-            <span className={styles.todayBadge}>Prato do dia</span>
-            <p className={styles.todayText}>{pratoDoDia.nome}</p>
+        <div className={styles.todayBanner}>
+          <div className={styles.todayBannerInner}>
+            <div className={styles.todayBannerIcon}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <div className={styles.todayBannerTexto}>
+              <span className={styles.todayBannerLabel}>Prato do Dia</span>
+              <span className={styles.todayBannerNome}>{pratoDoDia.nome}</span>
+            </div>
+            <span className={styles.todayBannerPreco}>{pratoDoDia.preco} MZN</span>
           </div>
         </div>
       )}
@@ -153,6 +263,39 @@ export default function Menu() {
 
         {/* ── Coluna Esquerda: Lista ── */}
         <main className={styles.main}>
+
+          {/* ── Prato do Dia — secção destacada ── */}
+          {!loading && !error && pratoDoDia && (
+            <div className={styles.pratoDoDiaCard}>
+              <div className={styles.pratoDoDiaImagemWrap}>
+                <img
+                  src={pratoDoDia.imagem?.url ?? pratoDoDia.imagem}
+                  alt={pratoDoDia.nome}
+                  className={styles.pratoDoDiaImagem}
+                />
+                <div className={styles.pratoDoDiaOverlay} />
+              </div>
+              <div className={styles.pratoDoDiaConteudo}>
+                <span className={styles.pratoDoDiaBadge}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  Prato do Dia
+                </span>
+                <h2 className={styles.pratoDoDiaNome}>{pratoDoDia.nome}</h2>
+                {pratoDoDia.descricao && (
+                  <p className={styles.pratoDoDiaDescricao}>{pratoDoDia.descricao}</p>
+                )}
+                <div className={styles.pratoDoDiaRodape}>
+                  <span className={styles.pratoDoDiaPreco}>{pratoDoDia.preco} MZN</span>
+                  <button
+                    className={styles.pratoDoDiaBtn}
+                    onClick={() => handleSelecionar(pratoDoDia)}
+                  >
+                    Selecionar prato
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {loading && (
             <div className={styles.lista}>
@@ -182,31 +325,38 @@ export default function Menu() {
 
           {!loading && !error && pratosFiltrados.length > 0 && (
             <div className={styles.lista}>
-              {pratosFiltrados.map((prato) => (
-                <div key={prato._id} className={styles.card}>
-                  {pratoDoDia?._id === prato._id && (
-                    <span className={styles.cardTodayBadge}>Hoje</span>
-                  )}
-                  <div className={styles.cardImagemWrap}>
-                    <img
-                      src={prato.imagem?.url ?? prato.imagem}
-                      alt={prato.nome}
-                      className={styles.cardImagem}
-                    />
+              {pratosFiltrados.map((prato) => {
+                const isHoje = pratoDoDia?._id === prato._id
+                return (
+                  <div key={prato._id} className={`${styles.card} ${isHoje ? styles.cardDestaque : ''}`}>
+                    {isHoje && (
+                      <span className={styles.cardTodayBadge}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        Prato do Dia
+                      </span>
+                    )}
+                    <div className={styles.cardImagemWrap}>
+                      <img
+                        src={prato.imagem?.url ?? prato.imagem}
+                        alt={prato.nome}
+                        className={styles.cardImagem}
+                      />
+                    </div>
+                    <div className={styles.cardTexto}>
+                      {isHoje && <span className={styles.cardDestaqueLabel}>Recomendado hoje</span>}
+                      <p className={styles.cardNome}>{prato.nome}</p>
+                      <p className={styles.cardDescricao}>{prato.descricao}</p>
+                      <span className={styles.cardPreco}>{prato.preco} MZN</span>
+                    </div>
+                    <button
+                      className={`${styles.btnSelecionar} ${isHoje ? styles.btnSelecionarDestaque : ''}`}
+                      onClick={() => handleSelecionar(prato)}
+                    >
+                      Selecionar
+                    </button>
                   </div>
-                  <div className={styles.cardTexto}>
-                    <p className={styles.cardNome}>{prato.nome}</p>
-                    <p className={styles.cardDescricao}>{prato.descricao}</p>
-                    <span className={styles.cardPreco}>{prato.preco} MZN</span>
-                  </div>
-                  <button
-                    className={styles.btnSelecionar}
-                    onClick={() => handleSelecionar(prato)}
-                  >
-                    Selecionar
-                  </button>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
 
@@ -279,6 +429,7 @@ export default function Menu() {
         </aside>
 
       </div>
+      <Footer />
     </div>
   )
 }

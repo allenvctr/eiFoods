@@ -85,6 +85,283 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Slideshow ── */
+.slideshow {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  overflow: hidden;
+  background: #111;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  animation: slideFadeIn 0.55s ease both;
+}
+
+@keyframes slideFadeIn {
+  from { opacity: 0; transform: scale(1.03); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.slideImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.slideOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0,0,0,0.78) 0%,
+    rgba(0,0,0,0.45) 55%,
+    rgba(0,0,0,0.10) 100%
+  );
+}
+
+.slideContent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-2xl) clamp(24px, 6vw, 80px);
+  max-width: 560px;
+  gap: var(--space-md);
+}
+
+.slideBadges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.slideBadgeHoje {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--color-accent);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+}
+
+.slideBadgePreco {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.slideNome {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  font-weight: 800;
+  color: white;
+  line-height: 1.15;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+
+.slideDescricao {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.3);
+}
+
+.slideBtnSelecionar {
+  align-self: flex-start;
+  margin-top: var(--space-sm);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 4px 16px rgba(42,107,24,0.4);
+}
+
+.slideBtnSelecionar:hover {
+  background: var(--color-primary-dark, #1e5012);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(42,107,24,0.5);
+}
+
+/* Setas */
+.slideArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  backdrop-filter: blur(6px);
+  z-index: 10;
+}
+
+.slideArrow:hover {
+  background: rgba(255,255,255,0.28);
+  border-color: rgba(255,255,255,0.5);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.slideArrowPrev { left: 16px; }
+.slideArrowNext { right: 16px; }
+
+/* Dots */
+.slideDots {
+  position: absolute;
+  bottom: 48px;
+  right: 24px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.slideDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.slideDotActive {
+  background: white;
+  transform: scale(1.3);
+}
+
+/* Barra de progresso */
+.slideProgress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.15);
+  z-index: 10;
+}
+
+.slideProgressBar {
+  height: 100%;
+  background: var(--color-primary);
+  animation: slideProgressAnim 4.5s linear both;
+}
+
+@keyframes slideProgressAnim {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+@media (max-width: 768px) {
+  .slideshow { height: 320px; }
+  .slideContent { max-width: 100%; }
+  .slideOverlay {
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.85) 0%,
+      rgba(0,0,0,0.4) 60%,
+      rgba(0,0,0,0.1) 100%
+    );
+  }
+  .slideContent {
+    justify-content: flex-end;
+    padding: var(--space-xl) var(--space-lg);
+    padding-bottom: 52px;
+  }
+  .slideArrow { display: none; }
+}
+
+@media (max-width: 480px) {
+  .slideshow { height: 260px; }
+  .slideNome { font-size: 1.4rem; }
+  .slideDescricao { display: none; }
+}
+
+/* ── Slideshow Outer Wrapper ── */
+.slideshowOuter {
+  position: relative;
+}
+
+/* Reservar espaço para a search flutuante no desktop */
+@media (min-width: 769px) {
+  .slideContent {
+    padding-bottom: 88px;
+  }
+}
+
+/* Search flutuante sobre o slideshow — desktop only */
+@media (min-width: 769px) {
+  .slideshowOuterActive .searchSection {
+    position: absolute;
+    bottom: 24px;
+    left: 0;
+    right: 0;
+    background: transparent;
+    border-bottom: none;
+    padding: 0 clamp(24px, 6vw, 80px);
+    z-index: 20;
+  }
+
+  .slideshowOuterActive .searchSection .searchWrap {
+    max-width: 560px;
+    margin: 0;
+  }
+
+  .slideshowOuterActive .searchInput {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .slideshowOuterActive .searchInput:focus {
+    background: white;
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25), 0 0 0 4px var(--color-primary-light);
+  }
+
+  .slideshowOuterActive .searchIcon {
+    color: var(--color-text-secondary);
+  }
+}
+
 /* ── Search Section (full-width, fora do grid) ── */
 .searchSection {
   background-color: var(--color-surface);
@@ -97,6 +374,77 @@
   margin: 0 auto;
 }
 
+/* ── Banner Prato do Dia ── */
+.todayBanner {
+  background: linear-gradient(135deg, #1e5012 0%, #2A6B18 60%, #359420 100%);
+  background-size: 200% 100%;
+  padding: 0 var(--space-xl);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  animation: bannerShimmer 4s ease-in-out infinite;
+}
+
+@keyframes bannerShimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+.todayBannerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 14px 0;
+}
+
+.todayBannerIcon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFD700;
+}
+
+.todayBannerTexto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.todayBannerLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.7);
+  font-family: var(--font-display);
+}
+
+.todayBannerNome {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: white;
+  font-family: var(--font-display);
+}
+
+.todayBannerPreco {
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* legado — mantido para o banner de Empresa */
 .todayBar {
   padding: 0 var(--space-xl);
 }
@@ -214,6 +562,150 @@
   color: white;
 }
 
+/* ── Prato do Dia — Card Destaque ── */
+.pratoDoDiaCard {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 8px 32px rgba(42,107,24,0.18);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 220px;
+  animation: fadeUp 0.45s ease both, cardBorderGlow 3s ease-in-out 1s infinite;
+}
+
+@keyframes cardBorderGlow {
+  0%, 100% { box-shadow: 0 8px 32px rgba(42,107,24,0.18); }
+  50%       { box-shadow: 0 8px 40px rgba(42,107,24,0.38), 0 0 0 3px rgba(42,107,24,0.12); }
+}
+
+.pratoDoDiaImagemWrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.pratoDoDiaImagem {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.pratoDoDiaCard:hover .pratoDoDiaImagem {
+  transform: scale(1.05);
+}
+
+.pratoDoDiaOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0) 60%, rgba(0,0,0,0.15) 100%);
+}
+
+.pratoDoDiaConteudo {
+  background: linear-gradient(135deg, #1e5012 0%, #2A6B18 60%, #359420 100%);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+.pratoDoDiaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.18);
+  color: #FFD700;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  border: 1px solid rgba(255,215,0,0.35);
+  align-self: flex-start;
+  animation: badgeGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes badgeGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
+  50%       { box-shadow: 0 0 10px 3px rgba(255,215,0,0.35); }
+}
+
+.pratoDoDiaNome {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  font-weight: 800;
+  color: white;
+  line-height: 1.2;
+}
+
+.pratoDoDiaDescricao {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pratoDoDiaRodape {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  margin-top: var(--space-xs);
+}
+
+.pratoDoDiaPreco {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: white;
+}
+
+.pratoDoDiaBtn {
+  background: white;
+  color: var(--color-primary);
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.pratoDoDiaBtn:hover {
+  background: #f0fce8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 768px) {
+  .pratoDoDiaCard {
+    grid-template-columns: 1fr;
+  }
+  .pratoDoDiaImagemWrap {
+    height: 180px;
+  }
+  .pratoDoDiaConteudo {
+    padding: var(--space-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .pratoDoDiaImagemWrap {
+    height: 150px;
+  }
+}
+
 /* ── Lista de Cards ── */
 .lista {
   display: flex;
@@ -239,15 +731,64 @@
   position: absolute;
   top: 10px;
   left: 10px;
-  background-color: var(--color-accent);
+  background: linear-gradient(135deg, #2A6B18, #4AAD2E);
   color: white;
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-radius: var(--radius-full);
-  padding: 4px 8px;
+  padding: 5px 10px;
   z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(42,107,24,0.4);
+}
+
+/* ── Card Destaque (Prato do Dia) ── */
+.cardDestaque {
+  border-color: var(--color-primary);
+  border-width: 2px;
+  background: linear-gradient(
+    to right,
+    rgba(42,107,24,0.06) 0%,
+    var(--color-surface) 40%
+  );
+  box-shadow: 0 4px 20px rgba(42,107,24,0.12), var(--shadow-sm);
+}
+
+.cardDestaque:hover {
+  box-shadow: 0 8px 32px rgba(42,107,24,0.22), var(--shadow-lg);
+  border-color: var(--color-primary);
+}
+
+.cardDestaque .cardImagemWrap {
+  width: 150px;
+  height: 120px;
+}
+
+.cardDestaqueLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+}
+
+.cardDestaque .cardNome {
+  font-size: 1.08rem;
+}
+
+.btnSelecionarDestaque {
+  background: linear-gradient(135deg, #2A6B18, #4AAD2E) !important;
+  box-shadow: 0 4px 16px rgba(42,107,24,0.35);
+}
+
+.btnSelecionarDestaque:hover {
+  background: linear-gradient(135deg, #1e5012, #359420) !important;
+  box-shadow: 0 8px 24px rgba(42,107,24,0.45) !important;
 }
 
 .card:nth-child(1) { animation-delay: 0.05s; }
@@ -706,6 +1247,7 @@
   }
 
   .cardImagemWrap,
+  .cardDestaque .cardImagemWrap,
   .skeletonImg {
     width: 100px;
     height: 88px;

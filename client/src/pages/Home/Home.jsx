@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
+import Footer from '../../components/Footer/Footer'
 import { scheduleApi } from '../../api'
 import styles from './Home.module.css'
 
@@ -63,6 +64,8 @@ export default function Home() {
   const [slideAtivo, setSlideAtivo] = useState(0)
   const [transicao, setTransicao] = useState(true)
   const [pratoDoDia, setPratoDoDia] = useState(null)
+  const [pratoVisivel, setPratoVisivel] = useState(false)
+  const pratoRef = useRef(null)
 
   const proximoSlide = useCallback(() => {
     setTransicao(false)
@@ -98,6 +101,17 @@ export default function Home() {
       active = false
       window.removeEventListener('focus', onFocus)
     }
+  }, [])
+
+  useEffect(() => {
+    const el = pratoRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setPratoVisivel(true); observer.disconnect() } },
+      { threshold: 0.2 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
   }, [])
 
   function irParaSlide(idx) {
@@ -185,10 +199,13 @@ export default function Home() {
         </section>
 
         {/* Banner — Prato do Dia */}
-        <section className={styles.pratoDoDia}>
+        <section className={styles.pratoDoDia} ref={pratoRef}>
           <div className={styles.pratoConteudo}>
-            <div className={styles.pratoTexto}>
-              <span className={styles.pratoBadge}>Prato do dia</span>
+            <div className={`${styles.pratoTexto} ${pratoVisivel ? styles.pratoTextoVisivel : ''}`}>
+              <span className={styles.pratoBadge}>
+                <span className={styles.pratoBadgePulse} />
+                Prato do dia
+              </span>
               <h2 className={styles.pratoNome}>{pratoExibido.nome}</h2>
               <p className={styles.pratoDescricao}>{pratoExibido.descricao}</p>
               <div className={styles.pratoRodape}>
@@ -198,7 +215,7 @@ export default function Home() {
                 </button>
               </div>
             </div>
-            <div className={styles.pratoImagemWrap}>
+            <div className={`${styles.pratoImagemWrap} ${pratoVisivel ? styles.pratoImagemVisivel : ''}`}>
               <img
                 src={pratoExibido.imagem?.url ?? pratoExibido.imagem}
                 alt={pratoExibido.nome}
@@ -313,19 +330,7 @@ export default function Home() {
 
       </main>
 
-      <footer className={styles.footer}>
-        <div className={styles.footerInner}>
-          <div className={styles.footerBrand}>
-            <img src="/logo.jpg" alt="Marmita Fresca" className={styles.footerLogo} />
-            <p className={styles.footerTagline}>O seu almoço, onde você trabalha.</p>
-          </div>
-          <div className={styles.footerLinks}>
-            <span onClick={() => navigate('/menu')}>Menu</span>
-            <span onClick={() => navigate('/sorteio')}>Sorteio</span>
-          </div>
-        </div>
-        <p className={styles.footerCopy}>© 2025 Marmita Fresca · Todos os direitos reservados</p>
-      </footer>
+      <Footer />
 
     </div>
   )

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
+import Footer from '../../components/Footer/Footer'
 import { sorteioApi } from '../../api'
 import { CONFIG } from '../../data/menuData'
 import styles from './Sorteio.module.css'
@@ -255,6 +256,7 @@ export default function Sorteio() {
 
         </div>
       </main>
+      <Footer />
     </div>
   )
 }

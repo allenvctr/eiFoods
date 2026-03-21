@@ -1,0 +1,281 @@
+.footer {
+  background-color: #0F1A0C;
+  color: rgba(255,255,255,0.75);
+  font-family: var(--font-body);
+}
+
+/* ── Grid principal ── */
+.inner {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: var(--space-2xl);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-2xl) var(--space-xl);
+}
+
+/* ── Brand ── */
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.logo {
+  height: 40px;
+  width: 40px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  filter: brightness(0.9);
+}
+
+.logoNome {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  line-height: 1.4;
+}
+
+.descricao {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.7;
+  max-width: 320px;
+}
+
+.whatsappLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: #25D366;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  transition: color var(--transition);
+  margin-top: var(--space-xs);
+}
+
+.whatsappLink:hover {
+  color: #2EEA74;
+}
+
+/* ── Colunas ── */
+.coluna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.colunaTitulo {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: var(--space-xs);
+}
+
+/* ── Navegação ── */
+.navLinks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.navLink {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.65);
+  font-size: 0.88rem;
+  font-family: var(--font-body);
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  transition: color var(--transition);
+  width: fit-content;
+}
+
+.navLink:hover {
+  color: white;
+}
+
+/* ── Horário ── */
+.horario {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.horarioLinha {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.5);
+}
+
+.horarioVal {
+  color: rgba(255,255,255,0.8);
+  font-weight: 600;
+}
+
+/* ── Métodos de pagamento ── */
+.metodos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.metodoBadge {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: white;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.03em;
+}
+
+/* ── Localização ── */
+.localizacao {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
+}
+
+/* ── Contacto ── */
+.contacto {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contactoLink {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.55);
+  transition: color var(--transition);
+  width: fit-content;
+}
+
+.contactoLink:hover {
+  color: white;
+}
+
+/* ── Bottom bar ── */
+.bottom {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+.copy {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.3);
+}
+
+.legal {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.3);
+}
+
+.legal span {
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.legal span:hover {
+  color: rgba(255,255,255,0.65);
+}
+
+.legalDot {
+  cursor: default !important;
+}
+
+/* ── Responsivo ── */
+@media (max-width: 1024px) {
+  .inner {
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: var(--space-xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .inner {
+    grid-template-columns: 1fr 1fr;
+    padding: var(--space-xl) var(--space-lg);
+    gap: var(--space-xl) var(--space-lg);
+  }
+
+  /* Brand ocupa linha inteira */
+  .brand {
+    grid-column: 1 / -1;
+    gap: var(--space-md);
+  }
+
+  .descricao { display: none; }
+
+  .bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .inner {
+    grid-template-columns: 1fr;
+    padding: var(--space-lg) var(--space-md);
+    gap: var(--space-lg);
+  }
+
+  /* Colunas em linha no mobile pequeno */
+  .coluna {
+    gap: var(--space-sm);
+  }
+
+  /* Horário e contacto mais compactos */
+  .horario,
+  .contacto {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .horarioLinha {
+    min-width: 140px;
+  }
+
+  .bottom {
+    padding: var(--space-md);
+  }
+
+  .legal {
+    flex-wrap: wrap;
+  }
+}

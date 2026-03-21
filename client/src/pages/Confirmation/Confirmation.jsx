@@ -28,12 +28,6 @@ export default function Confirmation() {
     navigate('/')
   }
 
-  const whatsappNumero = '258841234567'
-  const whatsappMsg = encodeURIComponent(
-    `Olá! Fiz um pedido no eiFoods.\n\nNome: ${deliveryDetails.name}\nLocal: ${deliveryDetails.location}\nTotal: ${total} MZN`
-  )
-  const whatsappUrl = `https://wa.me/${whatsappNumero}?text=${whatsappMsg}`
-
   return (
     <div className={styles.page}>
 
@@ -43,19 +37,23 @@ export default function Confirmation() {
 
         <div className={styles.card}>
 
-          <div className={styles.icone}>✅</div>
+          <div className={styles.icone}>🎉</div>
 
-          <h1 className={styles.titulo}>Pedido Confirmado!</h1>
+          <h1 className={styles.titulo}>Comprovativo enviado!</h1>
           <p className={styles.subtitulo}>
-            O seu pedido foi registado com sucesso
+            Assim que confirmarmos o pagamento, o seu pedido entra em preparação.
           </p>
+
           {orderId && (
-            <p style={{ fontSize: 12, color: 'var(--text-3, #aaa)', marginTop: 4 }}>Ref: #{orderId.slice(-8).toUpperCase()}</p>
+            <div className={styles.infoRow}>
+              <span>🔖</span>
+              <span>Ref: <strong>#{orderId.slice(-8).toUpperCase()}</strong></span>
+            </div>
           )}
 
           <div className={styles.infoRow}>
             <span>🕛</span>
-            <span>Entrega às <strong>12h</strong></span>
+            <span>Entrega prevista às <strong>12h</strong></span>
           </div>
 
           <div className={styles.infoRow}>
@@ -82,17 +80,8 @@ export default function Confirmation() {
           <div className={styles.divider} />
 
           <p className={styles.obrigado}>
-            Obrigado pelo seu pedido, <strong>{deliveryDetails.name || 'Cliente'}</strong>! 🙏
+            Obrigado, <strong>{deliveryDetails.name || 'Cliente'}</strong>! Iremos confirmar via WhatsApp assim que o pagamento for validado. 🙏
           </p>
-
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            className={styles.btnWhatsapp}
-          >
-            💬 Contacte-nos pelo WhatsApp
-          </a>
 
           <button
             className={styles.btnNovo}

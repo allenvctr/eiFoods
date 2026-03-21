@@ -15,6 +15,7 @@
   justify-content: center;
   align-items: flex-start;
   padding: var(--space-2xl) var(--space-xl);
+  padding-bottom: 110px;
   overflow: hidden;
 }
 
@@ -227,15 +228,27 @@
   width: 100%;
 }
 
+/* Entrada do texto (esquerda → centro) */
 .pratoTexto {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.pratoTextoVisivel {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .pratoBadge {
-  display: inline-block;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background-color: var(--color-accent);
   color: white;
   font-size: 0.75rem;
@@ -246,6 +259,39 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   width: fit-content;
+}
+
+.pratoBadgePulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+  display: inline-block;
+  flex-shrink: 0;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* Entrada da imagem (direita → centro), com delay */
+.pratoImagemWrap {
+  flex-shrink: 0;
+  width: 380px;
+  height: 280px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.30);
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.7s ease 0.2s, transform 0.7s ease 0.2s;
+}
+
+.pratoImagemVisivel {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .pratoNome {
@@ -817,6 +863,10 @@
 }
 
 @media (max-width: 480px) {
+  .hero {
+    padding-bottom: 220px;
+  }
+
   .headline {
     font-size: 2rem;
   }
