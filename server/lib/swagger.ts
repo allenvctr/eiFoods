@@ -207,6 +207,7 @@ const spec = {
             items: { $ref: '#/components/schemas/SorteioVencedor' },
           },
           updatedAt: { type: 'string', format: 'date-time' },
+          valorRifa: { type: 'number', example: 10, description: 'Valor da rifa em centavos (inteiro)' },
         },
       },
 
@@ -795,6 +796,65 @@ const spec = {
             description: 'Resultado atual removido',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
           },
+        },
+      },
+    },
+
+    '/sorteio/valor-rifa': {
+      patch: {
+        tags: ['Sorteio'],
+        summary: 'Atualizar valor da rifa (admin)',
+        description: 'Permite ao admin definir o valor cobrado por participação no sorteio.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['valorRifa'],
+                properties: {
+                  valorRifa: { type: 'number', example: 10, description: 'Valor da rifa em centavos' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Sorteio atualizado com novo valor',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
+          },
+          400: { description: 'Valor inválido', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        },
+      },
+    },
+
+    '/empresas/{id}/add-codes': {
+      post: {
+        tags: ['Empresas'],
+        summary: 'Adicionar lote incremental de códigos de rifa para uma empresa',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['quantidade'],
+                properties: {
+                  quantidade: { type: 'integer', minimum: 1, example: 10 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Empresa atualizada com novos códigos (array retornado)',
+            content: { 'application/json': { schema: { type: 'object' } } },
+          },
+          400: { description: 'Quantidade inválida', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          404: { description: 'Empresa não encontrada', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
         },
       },
     },
