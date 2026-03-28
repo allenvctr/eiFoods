@@ -71,6 +71,7 @@ interface AdminContextType {
   updateEmpresa: (id: string, data: Partial<EmpresaFormData>) => Promise<void>
   deleteEmpresa: (id: string) => Promise<void>
   regenerateEmpresaCodes: (id: string) => Promise<void>
+  addEmpresaCodes: (id: string, quantidade: number) => Promise<void>
   toggleEmpresaCode: (empresaId: string, codigoId: string, ativo: boolean) => Promise<void>
   createEmpresaMenu: (empresaId: string, data: EmpresaMenuFormData) => Promise<void>
   updateEmpresaMenu: (empresaId: string, menuId: string, data: Partial<EmpresaMenuFormData>) => Promise<void>
@@ -282,6 +283,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
   }, [])
 
+  const addEmpresaCodes = useCallback(async (id: string, quantidade: number) => {
+    const empresa = await empresasApi.addCodes(id, quantidade)
+    dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
+  }, [])
+
   const toggleEmpresaCode = useCallback(async (empresaId: string, codigoId: string, ativo: boolean) => {
     const empresa = await empresasApi.toggleCodigo(empresaId, codigoId, ativo)
     dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
@@ -310,7 +316,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       loadSchedule, setDayPrato,
       loadOrders, updateOrderStatus, deleteOrder,
       loadEmpresas, createEmpresa, updateEmpresa, deleteEmpresa,
-      regenerateEmpresaCodes, toggleEmpresaCode,
+      regenerateEmpresaCodes, addEmpresaCodes, toggleEmpresaCode,
       createEmpresaMenu, updateEmpresaMenu, deleteEmpresaMenu,
     }}>
       {children}

@@ -29,6 +29,7 @@ export interface ISorteioVencedor {
 }
 
 export interface ISorteio extends Document {
+  valorRifa: number
   inscricoesPendentes: ISorteioInscricao[]
   participantes: ISorteioParticipante[]
   vencedorAtual: ISorteioVencedor | null
@@ -75,6 +76,7 @@ const VencedorSchema = new Schema<ISorteioVencedor>(
 
 const SorteioSchema = new Schema<ISorteio>(
   {
+    valorRifa: { type: Number, required: true, min: 0, default: 10 },
     inscricoesPendentes: { type: [InscricaoSchema], default: [] },
     participantes: { type: [ParticipanteSchema], default: [] },
     vencedorAtual: { type: VencedorSchema, default: null },

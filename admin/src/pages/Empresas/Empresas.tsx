@@ -28,6 +28,7 @@ export function Empresas() {
 		updateEmpresa,
 		deleteEmpresa,
 		regenerateEmpresaCodes,
+		addEmpresaCodes,
 		toggleEmpresaCode,
 		createEmpresaMenu,
 		updateEmpresaMenu,
@@ -41,6 +42,7 @@ export function Empresas() {
 	const [menuPratoIds, setMenuPratoIds] = useState<string[]>([])
 	const [actionError, setActionError] = useState<string | null>(null)
 	const [saving, setSaving] = useState(false)
+	const [addCodesQty, setAddCodesQty] = useState(1)
 
 	useEffect(() => {
 		void loadEmpresas().catch((e) => setActionError((e as Error).message))
@@ -157,6 +159,22 @@ export function Empresas() {
 		if (!confirm('Remover este menu?')) return
 		try {
 			await deleteEmpresaMenu(selectedEmpresa._id, menuId)
+		} catch (e) {
+			setActionError((e as Error).message)
+		}
+	}
+
+	async function handleAddCodes() {
+		if (!selectedEmpresa) return
+		if (!Number.isInteger(addCodesQty) || addCodesQty < 1) {
+			setActionError('Quantidade de tickets deve ser um inteiro >= 1')
+			return
+		}
+
+		try {
+			setActionError(null)
+			await addEmpresaCodes(selectedEmpresa._id, addCodesQty)
+			setAddCodesQty(1)
 		} catch (e) {
 			setActionError((e as Error).message)
 		}
@@ -296,6 +314,18 @@ export function Empresas() {
 
 					<Card className={styles.panel}>
 						<h3>Códigos de Funcionário</h3>
+						<div className={styles.addCodesRow}>
+							<input
+								type="number"
+								min={1}
+								value={addCodesQty}
+								onChange={(e) => setAddCodesQty(Number(e.target.value) || 1)}
+								className={styles.addCodesInput}
+							/>
+							<Button variant="secondary" onClick={handleAddCodes}>
+								Adicionar lote de tickets
+							</Button>
+						</div>
 						<Button variant="secondary" onClick={() => regenerateEmpresaCodes(selectedEmpresa._id)}>
 							Regenerar códigos ({selectedEmpresa.nrFuncionariosPagos})
 						</Button>

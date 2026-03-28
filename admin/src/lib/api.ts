@@ -149,6 +149,7 @@ export interface ApiSorteioVencedor {
 
 export interface ApiSorteio {
   _id: string
+  valorRifa: number
   inscricoesPendentes: ApiSorteioInscricao[]
   participantes: ApiSorteioParticipante[]
   vencedorAtual: ApiSorteioVencedor | null
@@ -275,6 +276,9 @@ export const empresasApi = {
   regenerateCodes: (id: string) =>
     request<ApiEmpresa>(`/empresas/${id}/regenerate-codes`, json('POST', {})),
 
+  addCodes: (id: string, quantidade: number) =>
+    request<ApiEmpresa>(`/empresas/${id}/add-codes`, json('POST', { quantidade })),
+
   toggleCodigo: (empresaId: string, codigoId: string, ativo: boolean) =>
     request<ApiEmpresa>(`/empresas/${empresaId}/codigos/${codigoId}/ativo`, json('PATCH', { ativo })),
 
@@ -314,4 +318,7 @@ export const sorteioApi = {
 
   reset: () =>
     request<ApiSorteio>('/sorteio/reset', json('POST', {})),
+
+  updateValorRifa: (valorRifa: number) =>
+    request<ApiSorteio>('/sorteio/valor-rifa', json('PATCH', { valorRifa })),
 }

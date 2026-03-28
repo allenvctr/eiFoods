@@ -164,6 +164,45 @@ router.post('/:id/regenerate-codes', async (req, res, next) => {
 	}
 })
 
+// POST /api/empresas/:id/add-codes
+router.post('/:id/add-codes', async (req, res, next) => {
+	try {
+		const { quantidade } = req.body as { quantidade?: number }
+		const qty = Number(quantidade)
+
+		if (!Number.isInteger(qty) || qty < 1) {
+			return res.status(400).json({ error: 'quantidade deve ser um inteiro >= 1' })
+		}
+
+		const empresa = await Empresa.findById(req.params['id'])
+		if (!empresa) return res.status(404).json({ error: 'Empresa não encontrada' })
+
+		const codes = await buildUniqueCodes(qty)
+		const todayKey = getCurrentDateKey()
+
+		empresa.codigos.push(
+			...codes.map((code) => ({
+				_id: new mongoose.Types.ObjectId(),
+				code,
+				ativo: true,
+				maxUsosDia: 1,
+				usosDiaAtual: 0,
+				ultimoResetDia: todayKey,
+			}))
+		)
+
+		empresa.nrFuncionariosPagos += qty
+		await empresa.save()
+		await empresa.populate('menus.pratoIds')
+		res.json(empresa)
+	} catch (err) {
+		if ((err as { code?: number }).code === 11000) {
+			return res.status(409).json({ error: 'Conflito ao gerar códigos, tente novamente' })
+		}
+		next(err)
+	}
+})
+
 // PATCH /api/empresas/:id/codigos/:codigoId/ativo
 router.patch('/:id/codigos/:codigoId/ativo', async (req, res, next) => {
 	try {

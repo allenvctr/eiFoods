@@ -16,6 +16,8 @@ interface Participante {
 const DURACAO = 3000
 
 export function SorteioAdmin() {
+  const [valorRifa, setValorRifa] = useState(10)
+  const [valorRifaInput, setValorRifaInput] = useState('10')
   const [pendentes, setPendentes] = useState<ApiSorteio['inscricoesPendentes']>([])
   const [participantes, setParticipantes] = useState<Participante[]>([])
   const [historico, setHistorico] = useState<ApiSorteio['historico']>([])
@@ -31,6 +33,8 @@ export function SorteioAdmin() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function applySorteio(doc: ApiSorteio) {
+    setValorRifa(doc.valorRifa ?? 10)
+    setValorRifaInput(String(doc.valorRifa ?? 10))
     setPendentes(doc.inscricoesPendentes ?? [])
     setParticipantes(doc.participantes)
     setHistorico(doc.historico)
@@ -167,6 +171,23 @@ export function SorteioAdmin() {
     })()
   }
 
+  function salvarValorRifa() {
+    const valor = Number(valorRifaInput)
+    if (!Number.isFinite(valor) || valor < 0) {
+      setErro('Valor da rifa inválido')
+      return
+    }
+
+    void (async () => {
+      try {
+        const doc = await sorteioApi.updateValorRifa(valor)
+        applySorteio(doc)
+      } catch (e) {
+        setErro((e as Error).message)
+      }
+    })()
+  }
+
   if (loading) return <div style={{ padding: 24 }}>A carregar sorteio...</div>
 
   return (
@@ -211,6 +232,22 @@ export function SorteioAdmin() {
           </div>
         </div>
       )}
+
+      <div className={styles.formCard}>
+        <h3 className={styles.formTitulo}>Valor da rifa</h3>
+        <div className={styles.formAcoes} style={{ justifyContent: 'flex-start' }}>
+          <input
+            className={styles.input}
+            type="number"
+            min={0}
+            value={valorRifaInput}
+            onChange={(e) => setValorRifaInput(e.target.value)}
+            style={{ maxWidth: 160 }}
+          />
+          <button className={styles.btnConfirmar} onClick={salvarValorRifa}>Guardar</button>
+          <span className={styles.label}>Atual: {valorRifa} MZN</span>
+        </div>
+      </div>
 
       <div className={styles.layout}>
 

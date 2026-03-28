@@ -26,6 +26,7 @@ async function getOrCreateSorteio() {
   let doc = await Sorteio.findOne()
   if (!doc) {
     doc = await Sorteio.create({
+      valorRifa: 10,
       participantes: PARTICIPANTES_DEFAULT.map((p) => ({
         ...p,
         inscritoEm: new Date(),
@@ -127,6 +128,25 @@ router.post('/inscricoes/:id/confirmar', async (req, res, next) => {
       inscritoEm: new Date(),
     })
 
+    await doc.save()
+    res.json(doc)
+  } catch (err) {
+    next(err)
+  }
+})
+
+// PATCH /api/sorteio/valor-rifa
+router.patch('/valor-rifa', async (req, res, next) => {
+  try {
+    const { valorRifa } = req.body as { valorRifa?: number }
+    const valor = Number(valorRifa)
+
+    if (!Number.isFinite(valor) || valor < 0) {
+      return res.status(400).json({ error: 'valorRifa deve ser um número >= 0' })
+    }
+
+    const doc = await getOrCreateSorteio()
+    doc.valorRifa = valor
     await doc.save()
     res.json(doc)
   } catch (err) {

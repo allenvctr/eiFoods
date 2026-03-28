@@ -15,10 +15,9 @@ const PRATO_SORTEIO = {
 }
 
 const PARTICIPANTES = []
-const TAXA_PARTICIPACAO = 10
-
 export default function Sorteio() {
   const navigate = useNavigate()
+  const [valorRifa, setValorRifa] = useState(10)
   const [participantes, setParticipantes] = useState(PARTICIPANTES)
   const [vencedorAtual, setVencedorAtual] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -33,6 +32,7 @@ export default function Sorteio() {
       try {
         const data = await sorteioApi.get()
         if (!active) return
+        setValorRifa(Number.isFinite(data.valorRifa) ? data.valorRifa : 10)
         setParticipantes(data.participantes ?? [])
         setVencedorAtual(data.vencedorAtual ?? null)
       } catch (e) {
@@ -57,7 +57,7 @@ export default function Sorteio() {
     : null
 
   const whatsappTexto = encodeURIComponent(
-    `Olá! Quero participar no sorteio. Já fiz o pagamento de ${TAXA_PARTICIPACAO} MZN e envio o comprovativo.`
+    `Olá! Quero participar no sorteio. Já fiz o pagamento de ${valorRifa} MZN e envio o comprovativo.`
   )
   const whatsappUrl = `https://wa.me/${CONFIG.whatsappNumero}?text=${whatsappTexto}`
 
@@ -114,7 +114,7 @@ export default function Sorteio() {
         <section className={styles.participarCard}>
           <h2 className={styles.participarTitulo}>Como participar</h2>
           <ol className={styles.participarLista}>
-            <li>Pague a taxa de participação de <strong>{TAXA_PARTICIPACAO} MZN</strong>.</li>
+            <li>Pague a taxa de participação de <strong>{valorRifa} MZN</strong>.</li>
             <li>Envie o comprovativo de pagamento no WhatsApp.</li>
             <li>Aguarde a confirmação do admin para entrar na lista de participantes.</li>
           </ol>
