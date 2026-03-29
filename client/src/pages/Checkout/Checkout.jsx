@@ -71,8 +71,11 @@ export default function Checkout() {
 
   if (orderItems.length === 0) return null
 
-  const subtotal = orderItems.reduce((acc, item) => acc + item.total, 0)
-  const itensForaDoDia = orderItems.filter(i => i.isForaDoDia).length
+  const subtotal = orderItems.reduce((acc, item) => acc + (item.total * Math.max(1, item.quantity ?? 1)), 0)
+  const itensForaDoDia = orderItems.reduce((acc, item) => {
+    if (!item.isForaDoDia) return acc
+    return acc + Math.max(1, item.quantity ?? 1)
+  }, 0)
   const taxaForaDoDia = itensForaDoDia * TAXA_FORA_DO_DIA
   const total = subtotal + TAXA_ENTREGA + taxaForaDoDia
 
@@ -84,16 +87,20 @@ export default function Checkout() {
     setErroApi(null)
     try {
       const payload = {
-        items: orderItems.map(item => ({
-          pratoId: item.prato._id,
-          customizations: {
-            free: item.customizations.free ?? [],
-            salt: item.customizations.salt ?? 'Normal',
-          },
-          extraIds: Array.isArray(item.customizations.paid)
-            ? item.customizations.paid.map(e => e._id)
-            : item.customizations.paid?._id ? [item.customizations.paid._id] : [],
-        })),
+        items: orderItems.flatMap(item => {
+          const qty = Math.max(1, item.quantity ?? 1)
+          const itemPayload = {
+            pratoId: item.prato._id,
+            customizations: {
+              free: item.customizations.free ?? [],
+              salt: item.customizations.salt ?? 'Normal',
+            },
+            extraIds: Array.isArray(item.customizations.paid)
+              ? item.customizations.paid.map(e => e._id)
+              : item.customizations.paid?._id ? [item.customizations.paid._id] : [],
+          }
+          return Array.from({ length: qty }, () => itemPayload)
+        }),
         deliveryDetails,
         empresaCodigo: state.empresaCodigo || undefined,
       }
@@ -239,8 +246,8 @@ export default function Checkout() {
               <ul className={styles.resumoItens}>
                 {orderItems.map((item, i) => (
                   <li key={i} className={styles.resumoItem}>
-                    <span className={styles.resumoItemNome}>{item.prato.nome}</span>
-                    <span className={styles.resumoItemPreco}>{item.total} MZN</span>
+                    <span className={styles.resumoItemNome}>{item.prato.nome} · {Math.max(1, item.quantity ?? 1)}x</span>
+                    <span className={styles.resumoItemPreco}>{item.total * Math.max(1, item.quantity ?? 1)} MZN</span>
                   </li>
                 ))}
               </ul>

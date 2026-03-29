@@ -6,6 +6,17 @@ import type { ApiOrder } from '../../lib/api'
 import type { OrderStatus } from '../../types/admin.types'
 import styles from './Orders.module.css'
 
+interface GroupedOrderItem {
+  key: string
+  quantidade: number
+  pratoNome: string
+  free: string[]
+  salt: string
+  extras: string[]
+  unitPrice: number
+  totalPrice: number
+}
+
 function IcoUser() {
   return (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -62,6 +73,42 @@ export function Orders() {
     ready: state.orders.filter(o => o.status === 'ready').length,
     delivered: state.orders.filter(o => o.status === 'delivered').length
   }
+
+  function groupOrderItems(order: ApiOrder): GroupedOrderItem[] {
+    const map = new Map<string, GroupedOrderItem>()
+
+    for (const item of order.items) {
+      const free = item.customizations?.free ?? []
+      const salt = item.customizations?.salt ?? 'Normal'
+      const extras = item.extras.map((e) => e.nome)
+      const key = JSON.stringify({
+        pratoNome: item.pratoNome,
+        free,
+        salt,
+        extras,
+        unitPrice: item.total,
+      })
+
+      const existing = map.get(key)
+      if (existing) {
+        existing.quantidade += 1
+        existing.totalPrice += item.total
+      } else {
+        map.set(key, {
+          key,
+          quantidade: 1,
+          pratoNome: item.pratoNome,
+          free,
+          salt,
+          extras,
+          unitPrice: item.total,
+          totalPrice: item.total,
+        })
+      }
+    }
+
+    return Array.from(map.values())
+  }
   
   return (
     <div className={styles.orders}>
@@ -113,6 +160,11 @@ export function Orders() {
       {/* Lista de pedidos */}
       <div className={styles.ordersList}>
         {filteredOrders.map(order => (
+          (() => {
+            const groupedItems = groupOrderItems(order)
+            const totalItens = groupedItems.reduce((acc, item) => acc + item.quantidade, 0)
+
+            return (
           <Card 
             key={order._id} 
             className={styles.orderCard}
@@ -151,18 +203,31 @@ export function Orders() {
               </div>
               
               <div className={styles.orderItems}>
-                <div className={styles.itemsTitle}>Itens ({order.items.length})</div>
-                {order.items.map((item, index) => (
-                  <div key={index} className={styles.orderItem}>
+                <div className={styles.itemsTitle}>Itens ({totalItens})</div>
+                {groupedItems.map((item) => (
+                  <div key={item.key} className={styles.orderItem}>
                     <div className={styles.itemDetails}>
-                      <div className={styles.itemName}>{item.pratoNome}</div>
-                      {item.extras.length > 0 && (
-                        <div className={styles.itemCustomizations}>
-                          {item.extras.map(e => e.nome).join(', ')}
-                        </div>
+                      <div className={styles.itemNameRow}>
+                        <div className={styles.itemName}>{item.pratoNome}</div>
+                        {item.quantidade > 1 && (
+                          <span className={styles.itemQuantidade}>{item.quantidade}x</span>
+                        )}
+                      </div>
+
+                      <div className={styles.itemCustomizations}>
+                        {item.free.length > 0 && (
+                          <div>Gratis: {item.free.join(', ')}</div>
+                        )}
+                        <div>Sal: {item.salt}</div>
+                        {item.extras.length > 0 && (
+                          <div>Extras: {item.extras.join(', ')}</div>
+                        )}
+                      </div>
+                      {item.quantidade > 1 && (
+                        <div className={styles.itemUnitPrice}>Unitário: {formatPrice(item.unitPrice)}</div>
                       )}
                     </div>
-                    <div className={styles.itemPrice}>{formatPrice(item.total)}</div>
+                    <div className={styles.itemPrice}>{formatPrice(item.totalPrice)}</div>
                   </div>
                 ))}
               </div>
@@ -180,6 +245,8 @@ export function Orders() {
               </div>
             </div>
           </Card>
+            )
+          })()
         ))}
       </div>
       

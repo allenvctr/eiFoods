@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useOrder } from '../../context/useOrder'
 import Navbar from '../../components/Navbar/Navbar'
 import styles from './OrderSummary.module.css'
@@ -40,6 +40,7 @@ export default function OrderSummary() {
   const navigate = useNavigate()
   const { state, dispatch } = useOrder()
   const { orderItems } = state
+  const [metaExpandida, setMetaExpandida] = useState({})
 
   useEffect(() => {
     if (orderItems.length === 0) navigate('/menu')
@@ -47,8 +48,12 @@ export default function OrderSummary() {
 
   if (orderItems.length === 0) return null
 
-  const subtotal = orderItems.reduce((acc, item) => acc + item.total, 0)
-  const itensForaDoDia = orderItems.filter((item) => item.isForaDoDia).length
+  const totalItens = orderItems.reduce((acc, item) => acc + Math.max(1, item.quantity ?? 1), 0)
+  const subtotal = orderItems.reduce((acc, item) => acc + (item.total * Math.max(1, item.quantity ?? 1)), 0)
+  const itensForaDoDia = orderItems.reduce((acc, item) => {
+    if (!item.isForaDoDia) return acc
+    return acc + Math.max(1, item.quantity ?? 1)
+  }, 0)
   const taxaForaDoDia = itensForaDoDia * TAXA_FORA_DO_DIA
   const total = subtotal + TAXA_ENTREGA + taxaForaDoDia
 
@@ -61,6 +66,13 @@ export default function OrderSummary() {
     dispatch({ type: 'SELECT_DISH', payload: item.prato })
     dispatch({ type: 'SET_CUSTOMIZATION', payload: item.customizations })
     navigate('/customize', { state: { editIndex: index } })
+  }
+
+  function handleQuantidade(index, delta) {
+    const current = Math.max(1, orderItems[index]?.quantity ?? 1)
+    const next = current + delta
+    if (next < 1) return
+    dispatch({ type: 'UPDATE_ITEM_QUANTITY', payload: { index, quantity: next } })
   }
 
   return (
@@ -79,7 +91,7 @@ export default function OrderSummary() {
           </button>
           <h1 className={styles.title}>
             O seu carrinho
-            <span className={styles.titleBadge}>{orderItems.length}</span>
+            <span className={styles.titleBadge}>{totalItens}</span>
           </h1>
         </div>
 
@@ -97,6 +109,9 @@ export default function OrderSummary() {
                   item.customizations.salt !== 'Normal' && item.customizations.salt,
                   ...paidNomes,
                 ].filter(Boolean)
+                const precisaToggle = tags.length > 4 || tags.some((t) => String(t).length > 22)
+                const mostrarTudo = Boolean(metaExpandida[index])
+                const tagsVisiveis = mostrarTudo ? tags : tags.slice(0, 4)
 
                 return (
                   <li key={index} className={styles.item}>
@@ -115,14 +130,29 @@ export default function OrderSummary() {
                     <div className={styles.itemCorpo}>
                       <div className={styles.itemCabecalho}>
                         <p className={styles.itemNome}>{item.prato.nome}</p>
-                        <p className={styles.itemPreco}>{item.total} MZN</p>
+                        <p className={styles.itemPreco}>{item.total * Math.max(1, item.quantity ?? 1)} MZN</p>
+                      </div>
+
+                      <div className={styles.itemQtd}>
+                        <button className={styles.qtdBtn} onClick={() => handleQuantidade(index, -1)}>-</button>
+                        <span>{Math.max(1, item.quantity ?? 1)}x</span>
+                        <button className={styles.qtdBtn} onClick={() => handleQuantidade(index, 1)}>+</button>
                       </div>
 
                       {tags.length > 0 && (
                         <div className={styles.itemTags}>
-                          {tags.map((tag) => (
-                            <span key={tag} className={styles.itemTag}>{tag}</span>
+                          {tagsVisiveis.map((tag, tagIndex) => (
+                            <span key={`${tag}-${tagIndex}`} className={styles.itemTag}>{tag}</span>
                           ))}
+                          {precisaToggle && (
+                            <button
+                              type="button"
+                              className={styles.itemTagsToggle}
+                              onClick={() => setMetaExpandida((prev) => ({ ...prev, [index]: !prev[index] }))}
+                            >
+                              {mostrarTudo ? 'Ver menos' : 'Ver mais'}
+                            </button>
+                          )}
                         </div>
                       )}
                       {tags.length === 0 && (
@@ -163,7 +193,7 @@ export default function OrderSummary() {
 
               <div className={styles.resumoLinhas}>
                 <div className={styles.resumoLinha}>
-                  <span className={styles.resumoLabel}>Subtotal ({orderItems.length} {orderItems.length === 1 ? 'item' : 'itens'})</span>
+                  <span className={styles.resumoLabel}>Subtotal ({totalItens} {totalItens === 1 ? 'item' : 'itens'})</span>
                   <span className={styles.resumoValor}>{subtotal} MZN</span>
                 </div>
                 <div className={styles.resumoLinha}>

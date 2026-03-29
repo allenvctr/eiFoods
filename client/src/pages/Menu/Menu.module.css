@@ -1129,9 +1129,26 @@
 .cartItemCustom {
   font-size: 0.72rem;
   color: var(--color-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: initial;
+  line-height: 1.25;
+}
+
+.cartMetaToggle {
+  margin-top: 2px;
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.cartMetaToggle:hover {
+  text-decoration: underline;
 }
 
 .cartItemDireita {

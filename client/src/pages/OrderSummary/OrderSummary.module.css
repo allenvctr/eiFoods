@@ -175,10 +175,54 @@
   border: 1px solid var(--color-border);
 }
 
+.itemTagsToggle {
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.itemTagsToggle:hover {
+  text-decoration: underline;
+}
+
 .itemSemPersonalizacao {
   font-size: 0.78rem;
   color: var(--color-text-muted);
   font-style: italic;
+}
+
+.itemQtd {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.qtdBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.qtdBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .itemAcoes {

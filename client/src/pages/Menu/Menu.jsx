@@ -124,6 +124,7 @@ export default function Menu() {
   const [error, setError] = useState(null)
   const [busca, setBusca] = useState('')
   const [pratoDoDia, setPratoDoDia] = useState(null)
+  const [metaExpandida, setMetaExpandida] = useState({})
 
   const diaAtual = DIAS[new Date().getDay()]
 
@@ -186,7 +187,8 @@ export default function Menu() {
     dispatch({ type: 'REMOVE_ITEM', payload: index })
   }
 
-  const totalPedido = orderItems.reduce((acc, item) => acc + item.total, 0)
+  const totalItensPedido = orderItems.reduce((acc, item) => acc + Math.max(1, item.quantity ?? 1), 0)
+  const totalPedido = orderItems.reduce((acc, item) => acc + (item.total * Math.max(1, item.quantity ?? 1)), 0)
 
   return (
     <div className={styles.page}>
@@ -373,7 +375,7 @@ export default function Menu() {
               <h3 className={styles.cartTitulo}>Meu Pedido</h3>
             </div>
             {orderItems.length > 0 && (
-              <span className={styles.cartBadge}>{orderItems.length}</span>
+              <span className={styles.cartBadge}>{totalItensPedido}</span>
             )}
           </div>
 
@@ -386,30 +388,54 @@ export default function Menu() {
           ) : (
             <>
               <ul className={styles.cartItens}>
-                {orderItems.map((item, i) => (
-                  <li key={i} className={styles.cartItem}>
-                    <div className={styles.cartItemImgWrap}>
-                      {item.prato.imagem?.url
-                        ? <img src={item.prato.imagem.url} alt={item.prato.nome} className={styles.cartItemImg} />
-                        : <div className={styles.cartItemImgFallback}>🍽️</div>
-                      }
-                    </div>
-                    <div className={styles.cartItemInfo}>
-                      <p className={styles.cartItemNome}>{item.prato.nome}</p>
-                      {item.customizations?.free?.length > 0 && (
-                        <p className={styles.cartItemCustom}>{item.customizations.free.join(', ')}</p>
-                      )}
-                    </div>
-                    <div className={styles.cartItemDireita}>
-                      <span className={styles.cartItemPreco}>{item.total} MZN</span>
-                      <button
-                        className={styles.cartItemRemover}
-                        onClick={() => handleRemoverItem(i)}
-                        aria-label="Remover item"
-                      >✕</button>
-                    </div>
-                  </li>
-                ))}
+                {orderItems.map((item, i) => {
+                  const paidNames = Array.isArray(item.customizations?.paid)
+                    ? item.customizations.paid.map((e) => e.nome)
+                    : item.customizations?.paid?.nome ? [item.customizations.paid.nome] : []
+                  const metaLinhas = [
+                    `Qtd: ${Math.max(1, item.quantity ?? 1)}x`,
+                    item.customizations?.free?.length > 0 ? `Gratis: ${item.customizations.free.join(', ')}` : null,
+                    `Sal: ${item.customizations?.salt ?? 'Normal'}`,
+                    paidNames.length > 0 ? `Extras: ${paidNames.join(', ')}` : null,
+                  ].filter(Boolean)
+                  const precisaToggle = metaLinhas.length > 2 || metaLinhas.some((linha) => linha.length > 38)
+                  const mostrarTudo = Boolean(metaExpandida[i])
+                  const metaVisiveis = mostrarTudo ? metaLinhas : metaLinhas.slice(0, 2)
+
+                  return (
+                    <li key={i} className={styles.cartItem}>
+                      <div className={styles.cartItemImgWrap}>
+                        {item.prato.imagem?.url
+                          ? <img src={item.prato.imagem.url} alt={item.prato.nome} className={styles.cartItemImg} />
+                          : <div className={styles.cartItemImgFallback}>🍽️</div>
+                        }
+                      </div>
+                      <div className={styles.cartItemInfo}>
+                        <p className={styles.cartItemNome}>{item.prato.nome}</p>
+                        {metaVisiveis.map((linha) => (
+                          <p key={linha} className={styles.cartItemCustom}>{linha}</p>
+                        ))}
+                        {precisaToggle && (
+                          <button
+                            type="button"
+                            className={styles.cartMetaToggle}
+                            onClick={() => setMetaExpandida((prev) => ({ ...prev, [i]: !prev[i] }))}
+                          >
+                            {mostrarTudo ? 'Ver menos' : 'Ver mais'}
+                          </button>
+                        )}
+                      </div>
+                      <div className={styles.cartItemDireita}>
+                        <span className={styles.cartItemPreco}>{item.total * Math.max(1, item.quantity ?? 1)} MZN</span>
+                        <button
+                          className={styles.cartItemRemover}
+                          onClick={() => handleRemoverItem(i)}
+                          aria-label="Remover item"
+                        >✕</button>
+                      </div>
+                    </li>
+                  )
+                })}
               </ul>
 
               <div className={styles.cartRodape}>

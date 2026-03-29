@@ -6,7 +6,7 @@ import styles from './Navbar.module.css'
 export default function Navbar({ showCta = false }) {
   const navigate = useNavigate()
   const { state } = useOrder()
-  const totalItens = state.orderItems.length
+  const totalItens = state.orderItems.reduce((acc, item) => acc + Math.max(1, item.quantity ?? 1), 0)
   const [menuAberto, setMenuAberto] = useState(false)
 
   useEffect(() => {

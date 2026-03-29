@@ -4,6 +4,46 @@ import { useOrder } from '../../context/useOrder'
 import Navbar from '../../components/Navbar/Navbar'
 import styles from './Confirmation.module.css'
 
+function groupOrderItems(orderItems) {
+  const map = new Map()
+
+  for (const item of orderItems) {
+    const free = item.customizations?.free ?? []
+    const salt = item.customizations?.salt ?? 'Normal'
+    const paid = Array.isArray(item.customizations?.paid)
+      ? item.customizations.paid.map((p) => p.nome)
+      : item.customizations?.paid?.nome ? [item.customizations.paid.nome] : []
+    const unitPrice = item.total
+    const quantity = Math.max(1, item.quantity ?? 1)
+
+    const key = JSON.stringify({
+      pratoId: item.prato?._id ?? item.prato?.nome,
+      free,
+      salt,
+      paid,
+      unitPrice,
+    })
+
+    const existing = map.get(key)
+    if (existing) {
+      existing.quantity += quantity
+      existing.lineTotal += unitPrice * quantity
+    } else {
+      map.set(key, {
+        key,
+        pratoNome: item.prato?.nome ?? 'Prato',
+        free,
+        salt,
+        paid,
+        quantity,
+        unitPrice,
+        lineTotal: unitPrice * quantity,
+      })
+    }
+  }
+
+  return Array.from(map.values())
+}
 
 export default function Confirmation() {
   const navigate = useNavigate()
@@ -21,7 +61,8 @@ export default function Confirmation() {
     return null
   }
 
-  const total = orderItems.reduce((acc, item) => acc + item.total, 0)
+  const groupedItems = groupOrderItems(orderItems)
+  const total = groupedItems.reduce((acc, item) => acc + item.lineTotal, 0)
 
   function handleNovosPedido() {
     dispatch({ type: 'RESET_ORDER' })
@@ -65,10 +106,18 @@ export default function Confirmation() {
 
           <div className={styles.resumo}>
             <p className={styles.resumoLabel}>RESUMO</p>
-            {orderItems.map((item, index) => (
-              <div key={index} className={styles.resumoItem}>
-                <span>{item.prato.nome}</span>
-                <span>{item.prato.preco} MZN</span>
+            {groupedItems.map((item) => (
+              <div key={item.key} className={styles.resumoItemWrap}>
+                <div className={styles.resumoItem}>
+                  <span>{item.pratoNome} · {item.quantity}x</span>
+                  <span>{item.lineTotal} MZN</span>
+                </div>
+                <div className={styles.resumoItemMeta}>
+                  {item.free.length > 0 && <span>Gratis: {item.free.join(', ')}</span>}
+                  <span>Sal: {item.salt}</span>
+                  {item.paid.length > 0 && <span>Extras: {item.paid.join(', ')}</span>}
+                  {item.quantity > 1 && <span>Unitário: {item.unitPrice} MZN</span>}
+                </div>
               </div>
             ))}
             <div className={styles.totalRow}>

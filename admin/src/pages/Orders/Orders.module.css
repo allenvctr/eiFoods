@@ -160,8 +160,33 @@
   margin-bottom: 0.25rem;
 }
 
+.itemNameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.itemQuantidade {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #2563eb;
+  background: #dbeafe;
+}
+
 .itemCustomizations {
   font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.itemUnitPrice {
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
   color: #6b7280;
 }
 

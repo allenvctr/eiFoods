@@ -12,9 +12,10 @@ export default function Customize() {
   const location = useLocation()
   const { state, dispatch } = useOrder()
   const { showToast } = useToast()
-  const { selectedDish, customizations } = state
+  const { selectedDish, customizations, orderItems } = state
 
   const editIndex = location.state?.editIndex ?? null
+  const [quantity, setQuantity] = useState(1)
   const [extrasDisponiveis, setExtrasDisponiveis] = useState([])
   const [pratoDoDiaId, setPratoDoDiaId] = useState(null)
 
@@ -31,6 +32,15 @@ export default function Customize() {
   useEffect(() => {
     if (!selectedDish) navigate('/menu')
   }, [selectedDish, navigate])
+
+  useEffect(() => {
+    if (editIndex === null) {
+      setQuantity(1)
+      return
+    }
+    const item = orderItems[editIndex]
+    setQuantity(Math.max(1, item?.quantity ?? 1))
+  }, [editIndex, orderItems])
 
   if (!selectedDish) return null
 
@@ -70,6 +80,7 @@ export default function Customize() {
       isForaDoDia,
       foraDoDiaTaxa: isForaDoDia ? 50 : 0,
       total: totalPrato,
+      quantity,
     }
 
     if (editIndex !== null) {
@@ -226,8 +237,17 @@ export default function Customize() {
           </div>
         )}
 
+        <div className={styles.extrasTotal}>
+          <span>Quantidade</span>
+          <strong>{quantity}x</strong>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="button" className={styles.btnAdicionar} style={{ width: 'auto', padding: '8px 12px' }} onClick={() => setQuantity((q) => Math.max(1, q - 1))}>-</button>
+            <button type="button" className={styles.btnAdicionar} style={{ width: 'auto', padding: '8px 12px' }} onClick={() => setQuantity((q) => q + 1)}>+</button>
+          </div>
+        </div>
+
         <button className={styles.btnAdicionar} onClick={handleAdicionar}>
-          {editIndex !== null ? '✏️ Guardar alterações' : `Adicionar ao pedido · ${totalPrato} MZN`}
+          {editIndex !== null ? '✏️ Guardar alterações' : `Adicionar ao pedido · ${totalPrato * quantity} MZN`}
         </button>
 
       </main>
