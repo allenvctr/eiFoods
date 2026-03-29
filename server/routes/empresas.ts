@@ -21,11 +21,17 @@ async function buildUniqueCodes(total: number): Promise<string[]> {
 	while (used.size < target) {
 		const candidate = generateEmployeeCode()
 		if (used.has(candidate)) continue
-		const exists = await Empresa.exists({ 'codigos.code': candidate })
+		const exists = await Empresa.exists({ codigo: candidate })
 		if (!exists) used.add(candidate)
 	}
 
 	return Array.from(used)
+}
+
+async function buildUniqueCode(): Promise<string> {
+	const [code] = await buildUniqueCodes(1)
+	if (!code) throw new Error('Falha ao gerar código da empresa')
+	return code
 }
 
 async function ensureAllMenuPratosExist(pratoIds: string[]) {
@@ -58,12 +64,13 @@ router.get('/:id', async (req, res, next) => {
 // POST /api/empresas
 router.post('/', async (req, res, next) => {
 	try {
-		const { nome, ativo = true, nrFuncionariosPagos, menuNome = 'Menu principal', pratoIds = [] } = req.body as {
+		const { nome, ativo = true, nrFuncionariosPagos, menuNome = 'Menu principal', pratoIds = [], maxUsosDia = 1 } = req.body as {
 			nome: string
 			ativo?: boolean
 			nrFuncionariosPagos: number
 			menuNome?: string
 			pratoIds?: string[]
+			maxUsosDia?: number
 		}
 
 		if (!nome?.trim()) return res.status(400).json({ error: 'Nome da empresa é obrigatório' })
@@ -71,10 +78,14 @@ router.post('/', async (req, res, next) => {
 			return res.status(400).json({ error: 'nrFuncionariosPagos deve ser >= 1' })
 		}
 
+		if (!Number.isInteger(maxUsosDia) || maxUsosDia < 1) {
+			return res.status(400).json({ error: 'maxUsosDia deve ser um inteiro >= 1' })
+		}
+
 		const okPratos = await ensureAllMenuPratosExist(pratoIds)
 		if (!okPratos) return res.status(400).json({ error: 'Um ou mais pratos informados não existem' })
 
-		const codes = await buildUniqueCodes(nrFuncionariosPagos)
+		const code = await buildUniqueCode()
 		const todayKey = getCurrentDateKey()
 
 		const empresa = await Empresa.create({
@@ -82,7 +93,11 @@ router.post('/', async (req, res, next) => {
 			ativo,
 			nrFuncionariosPagos,
 			menus: [{ nome: menuNome, ativo: true, pratoIds }],
-			codigos: codes.map((code) => ({ code, ativo: true, maxUsosDia: 1, usosDiaAtual: 0, ultimoResetDia: todayKey })),
+			codigo: code,
+			codigoAtivo: true,
+			maxUsosDia,
+			usosDiaAtual: 0,
+			ultimoResetDia: todayKey,
 		})
 
 		await empresa.populate('menus.pratoIds')
@@ -98,10 +113,12 @@ router.post('/', async (req, res, next) => {
 // PUT /api/empresas/:id
 router.put('/:id', async (req, res, next) => {
 	try {
-		const { nome, ativo, nrFuncionariosPagos } = req.body as {
+		const { nome, ativo, nrFuncionariosPagos, maxUsosDia, codigoAtivo } = req.body as {
 			nome?: string
 			ativo?: boolean
 			nrFuncionariosPagos?: number
+			maxUsosDia?: number
+			codigoAtivo?: boolean
 		}
 
 		const update: Record<string, unknown> = {}
@@ -115,6 +132,17 @@ router.put('/:id', async (req, res, next) => {
 				return res.status(400).json({ error: 'nrFuncionariosPagos deve ser >= 1' })
 			}
 			update['nrFuncionariosPagos'] = nrFuncionariosPagos
+		}
+
+		if (maxUsosDia !== undefined) {
+			if (!Number.isInteger(maxUsosDia) || maxUsosDia < 1) {
+				return res.status(400).json({ error: 'maxUsosDia deve ser um inteiro >= 1' })
+			}
+			update['maxUsosDia'] = maxUsosDia
+		}
+
+		if (codigoAtivo !== undefined) {
+			update['codigoAtivo'] = Boolean(codigoAtivo)
 		}
 
 		const empresa = await Empresa.findByIdAndUpdate(req.params['id'], update, {
@@ -146,16 +174,11 @@ router.post('/:id/regenerate-codes', async (req, res, next) => {
 		const empresa = await Empresa.findById(req.params['id'])
 		if (!empresa) return res.status(404).json({ error: 'Empresa não encontrada' })
 
-		const codes = await buildUniqueCodes(empresa.nrFuncionariosPagos)
+		const code = await buildUniqueCode()
 		const todayKey = getCurrentDateKey()
-		empresa.codigos = codes.map((code) => ({
-			_id: new mongoose.Types.ObjectId(),
-			code,
-			ativo: true,
-			maxUsosDia: 1,
-			usosDiaAtual: 0,
-			ultimoResetDia: todayKey,
-		}))
+		empresa.codigo = code
+		empresa.usosDiaAtual = 0
+		empresa.ultimoResetDia = todayKey
 
 		await empresa.save()
 		res.json(empresa)
@@ -164,56 +187,14 @@ router.post('/:id/regenerate-codes', async (req, res, next) => {
 	}
 })
 
-// POST /api/empresas/:id/add-codes
-router.post('/:id/add-codes', async (req, res, next) => {
-	try {
-		const { quantidade } = req.body as { quantidade?: number }
-		const qty = Number(quantidade)
-
-		if (!Number.isInteger(qty) || qty < 1) {
-			return res.status(400).json({ error: 'quantidade deve ser um inteiro >= 1' })
-		}
-
-		const empresa = await Empresa.findById(req.params['id'])
-		if (!empresa) return res.status(404).json({ error: 'Empresa não encontrada' })
-
-		const codes = await buildUniqueCodes(qty)
-		const todayKey = getCurrentDateKey()
-
-		empresa.codigos.push(
-			...codes.map((code) => ({
-				_id: new mongoose.Types.ObjectId(),
-				code,
-				ativo: true,
-				maxUsosDia: 1,
-				usosDiaAtual: 0,
-				ultimoResetDia: todayKey,
-			}))
-		)
-
-		empresa.nrFuncionariosPagos += qty
-		await empresa.save()
-		await empresa.populate('menus.pratoIds')
-		res.json(empresa)
-	} catch (err) {
-		if ((err as { code?: number }).code === 11000) {
-			return res.status(409).json({ error: 'Conflito ao gerar códigos, tente novamente' })
-		}
-		next(err)
-	}
-})
-
-// PATCH /api/empresas/:id/codigos/:codigoId/ativo
-router.patch('/:id/codigos/:codigoId/ativo', async (req, res, next) => {
+// PATCH /api/empresas/:id/codigo/ativo
+router.patch('/:id/codigo/ativo', async (req, res, next) => {
 	try {
 		const { ativo } = req.body as { ativo: boolean }
 		const empresa = await Empresa.findById(req.params['id'])
 		if (!empresa) return res.status(404).json({ error: 'Empresa não encontrada' })
 
-		const codigo = empresa.codigos.find((c) => String(c._id) === req.params['codigoId'])
-		if (!codigo) return res.status(404).json({ error: 'Código não encontrado' })
-
-		codigo.ativo = Boolean(ativo)
+		empresa.codigoAtivo = Boolean(ativo)
 		await empresa.save()
 		res.json(empresa)
 	} catch (err) {
@@ -325,22 +306,21 @@ router.get('/codigo/:code', async (req, res, next) => {
 		const code = req.params['code']?.trim().toUpperCase()
 		if (!code) return res.status(400).json({ error: 'Código inválido' })
 
-		const empresa = await Empresa.findOne({ ativo: true, codigos: { $elemMatch: { code } } }).populate('menus.pratoIds')
+		const empresa = await Empresa.findOne({ ativo: true, codigo: code }).populate('menus.pratoIds')
 		if (!empresa) return res.status(404).json({ error: 'Código não encontrado' })
 
-		const codigo = empresa.codigos.find((c) => c.code === code)
-		if (!codigo || !codigo.ativo) {
+		if (!empresa.codigoAtivo) {
 			return res.status(403).json({ error: 'Código inativo' })
 		}
 
 		const today = getCurrentDateKey()
-		if (codigo.ultimoResetDia !== today) {
-			codigo.usosDiaAtual = 0
-			codigo.ultimoResetDia = today
+		if (empresa.ultimoResetDia !== today) {
+			empresa.usosDiaAtual = 0
+			empresa.ultimoResetDia = today
 			await empresa.save()
 		}
 
-		if (codigo.usosDiaAtual >= codigo.maxUsosDia) {
+		if (empresa.usosDiaAtual >= empresa.maxUsosDia) {
 			return res.status(403).json({ error: 'Código sem usos disponíveis para hoje' })
 		}
 
@@ -352,9 +332,8 @@ router.get('/codigo/:code', async (req, res, next) => {
 		res.json({
 			empresaId: empresa._id,
 			empresaNome: empresa.nome,
-			codigoId: codigo._id,
-			codigo: codigo.code,
-			usosRestantesHoje: Math.max(0, codigo.maxUsosDia - codigo.usosDiaAtual),
+			codigo: empresa.codigo,
+			usosRestantesHoje: Math.max(0, empresa.maxUsosDia - empresa.usosDiaAtual),
 			menu: menuAtivo,
 		})
 	} catch (err) {

@@ -15,6 +15,15 @@ interface Participante {
 
 const DURACAO = 3000
 
+function isFridayInMaputo() {
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Maputo',
+    weekday: 'short',
+  }).format(new Date()).toLowerCase()
+
+  return weekday === 'fri'
+}
+
 export function SorteioAdmin() {
   const [valorRifa, setValorRifa] = useState(10)
   const [valorRifaInput, setValorRifaInput] = useState('10')
@@ -31,6 +40,7 @@ export function SorteioAdmin() {
   const [novoContacto, setNovoContacto] = useState('')
   const [mostrarForm, setMostrarForm] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const podeSortearHoje = isFridayInMaputo()
 
   function applySorteio(doc: ApiSorteio) {
     setValorRifa(doc.valorRifa ?? 10)
@@ -74,6 +84,11 @@ export function SorteioAdmin() {
   }, [])
 
   function sortear() {
+    if (!podeSortearHoje) {
+      setErro('O sorteio só pode ser realizado à sexta-feira (Africa/Maputo).')
+      return
+    }
+
     if (fase !== 'idle' || participantes.length === 0) return
     setFase('animando')
     setVencedor(null)
@@ -292,7 +307,7 @@ export function SorteioAdmin() {
             </div>
 
             {fase === 'idle' && (
-              <button className={styles.btnSortear} onClick={sortear} disabled={participantes.length === 0}>
+              <button className={styles.btnSortear} onClick={sortear} disabled={participantes.length === 0 || !podeSortearHoje}>
                 Realizar Sorteio
               </button>
             )}
@@ -303,6 +318,9 @@ export function SorteioAdmin() {
               <div className={styles.tamborAcoes}>
                 <button className={styles.btnReiniciar} onClick={reiniciar}>Novo sorteio</button>
               </div>
+            )}
+            {!podeSortearHoje && (
+              <p className={styles.maquinaLabel}>Sorteio disponível apenas na sexta-feira (Africa/Maputo).</p>
             )}
           </div>
 

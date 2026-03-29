@@ -8,6 +8,7 @@ interface EmpresaFormState {
 	nome: string
 	ativo: boolean
 	nrFuncionariosPagos: number
+	maxUsosDia: number
 	menuNome: string
 	pratoIds: string[]
 }
@@ -16,6 +17,7 @@ const EMPTY_FORM: EmpresaFormState = {
 	nome: '',
 	ativo: true,
 	nrFuncionariosPagos: 1,
+	maxUsosDia: 1,
 	menuNome: 'Menu principal',
 	pratoIds: [],
 }
@@ -28,7 +30,6 @@ export function Empresas() {
 		updateEmpresa,
 		deleteEmpresa,
 		regenerateEmpresaCodes,
-		addEmpresaCodes,
 		toggleEmpresaCode,
 		createEmpresaMenu,
 		updateEmpresaMenu,
@@ -42,7 +43,7 @@ export function Empresas() {
 	const [menuPratoIds, setMenuPratoIds] = useState<string[]>([])
 	const [actionError, setActionError] = useState<string | null>(null)
 	const [saving, setSaving] = useState(false)
-	const [addCodesQty, setAddCodesQty] = useState(1)
+	const [limiteDiarioInput, setLimiteDiarioInput] = useState(1)
 
 	useEffect(() => {
 		void loadEmpresas().catch((e) => setActionError((e as Error).message))
@@ -53,6 +54,12 @@ export function Empresas() {
 		() => state.empresas.find((e) => e._id === selectedEmpresaId) ?? null,
 		[selectedEmpresaId, state.empresas]
 	)
+
+	useEffect(() => {
+		if (selectedEmpresa) {
+			setLimiteDiarioInput(selectedEmpresa.maxUsosDia)
+		}
+	}, [selectedEmpresa])
 
 	function resetForm() {
 		setEditingEmpresa(null)
@@ -78,6 +85,10 @@ export function Empresas() {
 			setActionError('Selecione pelo menos um prato para o menu inicial')
 			return
 		}
+		if (!Number.isInteger(form.maxUsosDia) || form.maxUsosDia < 1) {
+			setActionError('Limite diário deve ser um inteiro >= 1')
+			return
+		}
 
 		try {
 			setSaving(true)
@@ -87,6 +98,7 @@ export function Empresas() {
 					nome: form.nome,
 					ativo: form.ativo,
 					nrFuncionariosPagos: form.nrFuncionariosPagos,
+					maxUsosDia: form.maxUsosDia,
 				})
 			} else {
 				await createEmpresa(form)
@@ -107,6 +119,7 @@ export function Empresas() {
 			nome: empresa.nome,
 			ativo: empresa.ativo,
 			nrFuncionariosPagos: empresa.nrFuncionariosPagos,
+			maxUsosDia: empresa.maxUsosDia,
 			menuNome: firstMenu?.nome ?? 'Menu principal',
 			pratoIds,
 		})
@@ -164,17 +177,16 @@ export function Empresas() {
 		}
 	}
 
-	async function handleAddCodes() {
+	async function handleSalvarLimiteDiario() {
 		if (!selectedEmpresa) return
-		if (!Number.isInteger(addCodesQty) || addCodesQty < 1) {
-			setActionError('Quantidade de tickets deve ser um inteiro >= 1')
+		if (!Number.isInteger(limiteDiarioInput) || limiteDiarioInput < 1) {
+			setActionError('Limite diário deve ser um inteiro >= 1')
 			return
 		}
 
 		try {
 			setActionError(null)
-			await addEmpresaCodes(selectedEmpresa._id, addCodesQty)
-			setAddCodesQty(1)
+			await updateEmpresa(selectedEmpresa._id, { maxUsosDia: limiteDiarioInput })
 		} catch (e) {
 			setActionError((e as Error).message)
 		}
@@ -206,6 +218,15 @@ export function Empresas() {
 								min={1}
 								value={form.nrFuncionariosPagos}
 								onChange={(e) => setForm((p) => ({ ...p, nrFuncionariosPagos: Number(e.target.value) || 1 }))}
+							/>
+						</label>
+						<label>
+							Limite diário do código
+							<input
+								type="number"
+								min={1}
+								value={form.maxUsosDia}
+								onChange={(e) => setForm((p) => ({ ...p, maxUsosDia: Number(e.target.value) || 1 }))}
 							/>
 						</label>
 						<label>
@@ -252,7 +273,7 @@ export function Empresas() {
 								<div>
 									<strong>{empresa.nome}</strong>
 									<p>{empresa.nrFuncionariosPagos} funcionários pagos</p>
-									<small>{empresa.ativo ? 'Ativa' : 'Inativa'} · {empresa.codigos.length} códigos</small>
+									<small>{empresa.ativo ? 'Ativa' : 'Inativa'} · Código único</small>
 								</div>
 								<div className={styles.itemActions}>
 									<Button size="small" variant="secondary" onClick={() => setSelectedEmpresaId(empresa._id)}>Ver detalhes</Button>
@@ -314,39 +335,38 @@ export function Empresas() {
 
 					<Card className={styles.panel}>
 						<h3>Códigos de Funcionário</h3>
+						<div className={styles.listItem}>
+							<div>
+								<strong>{selectedEmpresa.codigo}</strong>
+								<p>Usos hoje: {selectedEmpresa.usosDiaAtual}/{selectedEmpresa.maxUsosDia}</p>
+							</div>
+							<div className={styles.itemActions}>
+								<Button
+									size="small"
+									variant={selectedEmpresa.codigoAtivo ? 'danger' : 'success'}
+									onClick={() => toggleEmpresaCode(selectedEmpresa._id, !selectedEmpresa.codigoAtivo)}
+								>
+									{selectedEmpresa.codigoAtivo ? 'Desativar' : 'Ativar'}
+								</Button>
+								<Button size="small" variant="secondary" onClick={() => regenerateEmpresaCodes(selectedEmpresa._id)}>
+									Regenerar código
+								</Button>
+							</div>
+						</div>
 						<div className={styles.addCodesRow}>
 							<input
 								type="number"
 								min={1}
-								value={addCodesQty}
-								onChange={(e) => setAddCodesQty(Number(e.target.value) || 1)}
+								value={limiteDiarioInput}
+								onChange={(e) => setLimiteDiarioInput(Number(e.target.value) || 1)}
 								className={styles.addCodesInput}
 							/>
-							<Button variant="secondary" onClick={handleAddCodes}>
-								Adicionar lote de tickets
+							<Button variant="secondary" onClick={handleSalvarLimiteDiario}>
+								Guardar limite diário
 							</Button>
 						</div>
-						<Button variant="secondary" onClick={() => regenerateEmpresaCodes(selectedEmpresa._id)}>
-							Regenerar códigos ({selectedEmpresa.nrFuncionariosPagos})
-						</Button>
 						<div className={styles.list}>
-							{selectedEmpresa.codigos.map((codigo) => (
-								<div key={codigo._id} className={styles.listItem}>
-									<div>
-										<strong>{codigo.code}</strong>
-										<p>Usos hoje: {codigo.usosDiaAtual}/{codigo.maxUsosDia}</p>
-									</div>
-									<div className={styles.itemActions}>
-										<Button
-											size="small"
-											variant={codigo.ativo ? 'danger' : 'success'}
-											onClick={() => toggleEmpresaCode(selectedEmpresa._id, codigo._id, !codigo.ativo)}
-										>
-											{codigo.ativo ? 'Desativar' : 'Ativar'}
-										</Button>
-									</div>
-								</div>
-							))}
+							<p>Cada empresa possui apenas um código com limite diário de uso.</p>
 						</div>
 					</Card>
 				</div>

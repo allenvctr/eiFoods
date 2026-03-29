@@ -2,7 +2,9 @@ import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
 import mongoose from 'mongoose'
-import 'dotenv/config'
+import dotenv from 'dotenv'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import swaggerUi from 'swagger-ui-express'
 import pratosRouter from './routes/pratos.ts'
@@ -12,6 +14,10 @@ import ordersRouter from './routes/orders.ts'
 import sorteioRouter from './routes/sorteio.ts'
 import empresasRouter from './routes/empresas.ts'
 import swaggerSpec from './lib/swagger.ts'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+dotenv.config({ path: resolve(__dirname, '.env') })
 
 const app = express()
 const PORT = process.env['PORT'] ?? 3000
@@ -74,10 +80,11 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 // ── Database + Server ───────────────────────────────────────────────────────
 
 async function start() {
-  const uri = process.env['MONGO_URI']
+  const uri = process.env['MONGO_URI'] ?? process.env['mongo_uri']
   if (!uri) throw new Error('MONGO_URI não definida no .env')
 
-  await mongoose.connect(uri, { dbName: process.env['MONGO_DB_NAME'] ?? 'marmita_db' })
+  const dbName = process.env['MONGO_DB_NAME'] ?? process.env['mongo_db_name'] ?? 'marmita_db'
+  await mongoose.connect(uri, { dbName })
   console.log('[DB] MongoDB conectado')
 
   app.listen(PORT, () => {

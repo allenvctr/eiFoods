@@ -15,6 +15,16 @@ const PRATO_SORTEIO = {
 }
 
 const PARTICIPANTES = []
+
+function isFridayInMaputo() {
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Maputo',
+    weekday: 'short',
+  }).format(new Date()).toLowerCase()
+
+  return weekday === 'fri'
+}
+
 export default function Sorteio() {
   const navigate = useNavigate()
   const [valorRifa, setValorRifa] = useState(10)
@@ -25,6 +35,7 @@ export default function Sorteio() {
   const [inscricao, setInscricao] = useState({ nome: '', empresa: '', contacto: '' })
   const [inscrevendo, setInscrevendo] = useState(false)
   const [inscricaoMsg, setInscricaoMsg] = useState(null)
+  const bloqueioSexta = isFridayInMaputo()
 
   useEffect(() => {
     let active = true
@@ -63,6 +74,11 @@ export default function Sorteio() {
 
   async function submeterInscricao(e) {
     e.preventDefault()
+    if (bloqueioSexta) {
+      setInscricaoMsg('As inscrições ficam indisponíveis na sexta-feira. Volte a tentar de sábado a quinta.')
+      return
+    }
+
     if (!inscricao.nome.trim() || !inscricao.contacto.trim()) {
       setInscricaoMsg('Preencha nome e contacto para se inscrever.')
       return
@@ -118,6 +134,9 @@ export default function Sorteio() {
             <li>Envie o comprovativo de pagamento no WhatsApp.</li>
             <li>Aguarde a confirmação do admin para entrar na lista de participantes.</li>
           </ol>
+          {bloqueioSexta && (
+            <p className={styles.inscricaoMsg}>Hoje (sexta-feira) as novas inscrições de rifa estão bloqueadas.</p>
+          )}
           <a
             href={whatsappUrl}
             target="_blank"
@@ -149,8 +168,8 @@ export default function Sorteio() {
                 onChange={(e) => setInscricao((prev) => ({ ...prev, contacto: e.target.value }))}
               />
             </div>
-            <button className={styles.btnInscrever} type="submit" disabled={inscrevendo}>
-              {inscrevendo ? 'A enviar...' : 'Enviar inscrição'}
+            <button className={styles.btnInscrever} type="submit" disabled={inscrevendo || bloqueioSexta}>
+              {inscrevendo ? 'A enviar...' : (bloqueioSexta ? 'Inscrições fechadas hoje' : 'Enviar inscrição')}
             </button>
             {inscricaoMsg && <p className={styles.inscricaoMsg}>{inscricaoMsg}</p>}
           </form>

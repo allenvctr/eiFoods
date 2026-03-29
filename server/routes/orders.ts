@@ -4,6 +4,7 @@ import Prato from '../models/Prato'
 import Extra from '../models/Extra'
 import Empresa, { getCurrentDateKey } from '../models/Empresa'
 import PratoDoDia, { type DiaSemana } from '../models/PratoDoDia'
+import { getMaputoWeekdayNumber } from '../lib/businessTime'
 
 const router = Router()
 
@@ -20,7 +21,7 @@ const DAY_MAP: Record<number, DiaSemana> = {
 }
 
 async function getTodayPratoId(): Promise<string | null> {
-  const dayOfWeek = new Date().getDay()
+  const dayOfWeek = getMaputoWeekdayNumber()
   const diaSemana = DAY_MAP[dayOfWeek]
   if (!diaSemana) return null
 
@@ -66,26 +67,25 @@ router.post('/', async (req, res, next) => {
 
     let empresaId: string | undefined
     let empresaCodigoResolved: string | undefined
-    let codigoParaConsumir: { empresaId: string; codigoId: string } | undefined
+    let codigoParaConsumir: { empresaId: string; codigo: string } | undefined
     let allowedPratosSet: Set<string> | null = null
 
     if (empresaCodigo?.trim()) {
       const code = empresaCodigo.trim().toUpperCase()
-      const empresa = await Empresa.findOne({ ativo: true, codigos: { $elemMatch: { code } } })
+      const empresa = await Empresa.findOne({ ativo: true, codigo: code })
       if (!empresa) return res.status(404).json({ error: 'Código de empresa inválido' })
 
-      const codigo = empresa.codigos.find((c) => c.code === code)
-      if (!codigo || !codigo.ativo) {
+      if (!empresa.codigoAtivo) {
         return res.status(403).json({ error: 'Código da empresa inativo' })
       }
 
       const today = getCurrentDateKey()
-      if (codigo.ultimoResetDia !== today) {
-        codigo.usosDiaAtual = 0
-        codigo.ultimoResetDia = today
+      if (empresa.ultimoResetDia !== today) {
+        empresa.usosDiaAtual = 0
+        empresa.ultimoResetDia = today
       }
 
-      if (codigo.usosDiaAtual >= codigo.maxUsosDia) {
+      if (empresa.usosDiaAtual >= empresa.maxUsosDia) {
         return res.status(403).json({ error: 'Código da empresa sem usos disponíveis hoje' })
       }
 
@@ -97,7 +97,7 @@ router.post('/', async (req, res, next) => {
       allowedPratosSet = new Set(menuAtivo.pratoIds.map((id) => String(id)))
       empresaId = String(empresa._id)
       empresaCodigoResolved = code
-      codigoParaConsumir = { empresaId, codigoId: String(codigo._id) }
+      codigoParaConsumir = { empresaId, codigo: code }
 
       if (allowedPratosSet.size === 0) {
         return res.status(400).json({ error: 'Menu da empresa sem pratos disponíveis' })
@@ -164,14 +164,13 @@ router.post('/', async (req, res, next) => {
 
     if (codigoParaConsumir) {
       const empresa = await Empresa.findById(codigoParaConsumir.empresaId)
-      const codigo = empresa?.codigos.find((c) => String(c._id) === codigoParaConsumir.codigoId)
-      if (empresa && codigo) {
+      if (empresa && empresa.codigo === codigoParaConsumir.codigo) {
         const today = getCurrentDateKey()
-        if (codigo.ultimoResetDia !== today) {
-          codigo.usosDiaAtual = 0
-          codigo.ultimoResetDia = today
+        if (empresa.ultimoResetDia !== today) {
+          empresa.usosDiaAtual = 0
+          empresa.ultimoResetDia = today
         }
-        codigo.usosDiaAtual += 1
+        empresa.usosDiaAtual += 1
         await empresa.save()
       }
     }

@@ -22,6 +22,7 @@ const spec = {
     { name: 'Prato do Dia', description: 'Agenda semanal do prato em destaque' },
     { name: 'Encomendas', description: 'Gestão de encomendas de clientes' },
     { name: 'Sorteio', description: 'Gestão do sorteio diário (participantes e resultado)' },
+    { name: 'Empresas', description: 'Gestão de empresas, código único e menus exclusivos' },
   ],
 
   // ── Reusable schemas ──────────────────────────────────────────────────────
@@ -689,7 +690,7 @@ const spec = {
       post: {
         tags: ['Sorteio'],
         summary: 'Criar inscrição pendente no sorteio',
-        description: 'Endpoint público para cliente se inscrever. A inscrição só vira participante válido após confirmação de pagamento no admin.',
+        description: 'Endpoint público para cliente se inscrever. A inscrição só vira participante válido após confirmação de pagamento no admin. Novas inscrições ficam bloqueadas às sextas-feiras (Africa/Maputo).',
         requestBody: {
           required: true,
           content: {
@@ -713,6 +714,10 @@ const spec = {
           },
           400: {
             description: 'Dados inválidos ou inscrição duplicada',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          },
+          403: {
+            description: 'Inscrições bloqueadas na sexta-feira',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
           },
         },
@@ -774,13 +779,14 @@ const spec = {
       post: {
         tags: ['Sorteio'],
         summary: 'Realizar sorteio e publicar vencedor atual',
+        description: 'O sorteio só pode ser realizado à sexta-feira (Africa/Maputo).',
         responses: {
           200: {
             description: 'Sorteio realizado',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
           },
           400: {
-            description: 'Sem participantes para sortear',
+            description: 'Sem participantes para sortear ou tentativa fora da sexta-feira',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
           },
         },
@@ -829,10 +835,10 @@ const spec = {
       },
     },
 
-    '/empresas/{id}/add-codes': {
-      post: {
+    '/empresas/{id}/codigo/ativo': {
+      patch: {
         tags: ['Empresas'],
-        summary: 'Adicionar lote incremental de códigos de rifa para uma empresa',
+        summary: 'Ativar/desativar código único da empresa',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         requestBody: {
           required: true,
@@ -840,9 +846,9 @@ const spec = {
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['quantidade'],
+                required: ['ativo'],
                 properties: {
-                  quantidade: { type: 'integer', minimum: 1, example: 10 },
+                  ativo: { type: 'boolean', example: true },
                 },
               },
             },
@@ -850,10 +856,10 @@ const spec = {
         },
         responses: {
           200: {
-            description: 'Empresa atualizada com novos códigos (array retornado)',
+            description: 'Empresa atualizada',
             content: { 'application/json': { schema: { type: 'object' } } },
           },
-          400: { description: 'Quantidade inválida', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          400: { description: 'Payload inválido', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
           404: { description: 'Empresa não encontrada', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
         },
       },

@@ -3,11 +3,11 @@
  * Tipos específicos da aplicação de administração
  */
 
-import type { ApiPrato, ApiExtra, ApiOrder, ApiSchedule, ApiEmpresa, ApiEmpresaCodigo, ApiEmpresaMenu } from '../lib/api'
+import type { ApiPrato, ApiExtra, ApiOrder, ApiSchedule, ApiEmpresa, ApiEmpresaMenu } from '../lib/api'
 
 // Re-export API types as the canonical domain types for the admin panel
 export type { ApiPrato as Prato, ApiExtra as Extra, ApiOrder as Order, ApiSchedule as Schedule }
-export type { ApiPrato, ApiExtra, ApiOrder, ApiSchedule, ApiEmpresa, ApiEmpresaCodigo, ApiEmpresaMenu }
+export type { ApiPrato, ApiExtra, ApiOrder, ApiSchedule, ApiEmpresa, ApiEmpresaMenu }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Pedidos & Status
@@ -62,6 +62,7 @@ export interface EmpresaFormData {
   nome: string
   ativo: boolean
   nrFuncionariosPagos: number
+  maxUsosDia: number
   menuNome: string
   pratoIds: string[]
 }
