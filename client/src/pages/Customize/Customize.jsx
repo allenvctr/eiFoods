@@ -74,9 +74,7 @@ export default function Customize() {
   }
 
   function handleAdicionar() {
-    const quantidadeAtual = editIndex !== null
-      ? Math.max(1, Number(state.orderItems?.[editIndex]?.quantity ?? 1))
-      : 1
+    const quantidadeAtual = Math.max(1, Number(quantity ?? 1))
 
     const novoItem = {
       prato: selectedDish,

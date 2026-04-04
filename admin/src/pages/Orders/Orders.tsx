@@ -78,30 +78,32 @@ export function Orders() {
     const map = new Map<string, GroupedOrderItem>()
 
     for (const item of order.items) {
+      const quantity = Math.max(1, Number(item.quantity ?? 1))
       const free = item.customizations?.free ?? []
       const salt = item.customizations?.salt ?? 'Normal'
       const extras = item.extras.map((e) => e.nome)
+      const unitPrice = item.total / quantity
       const key = JSON.stringify({
         pratoNome: item.pratoNome,
         free,
         salt,
         extras,
-        unitPrice: item.total,
+        unitPrice,
       })
 
       const existing = map.get(key)
       if (existing) {
-        existing.quantidade += 1
+        existing.quantidade += quantity
         existing.totalPrice += item.total
       } else {
         map.set(key, {
           key,
-          quantidade: 1,
+          quantidade: quantity,
           pratoNome: item.pratoNome,
           free,
           salt,
           extras,
-          unitPrice: item.total,
+          unitPrice,
           totalPrice: item.total,
         })
       }
@@ -204,15 +206,15 @@ export function Orders() {
               
               <div className={styles.orderItems}>
                 <div className={styles.itemsTitle}>
-                  Itens ({order.items.reduce((acc, item) => acc + Math.max(1, Number(item.quantity ?? 1)), 0)})
+                  Itens ({totalItens})
                 </div>
-                {order.items.map((item, index) => (
+                {groupedItems.map((item, index) => (
                   <div key={index} className={styles.orderItem}>
                     <div className={styles.itemDetails}>
-                      <div className={styles.itemName}>{Math.max(1, Number(item.quantity ?? 1))}x {item.pratoNome}</div>
+                      <div className={styles.itemName}>{item.quantidade}x {item.pratoNome}</div>
                       {item.extras.length > 0 && (
                         <div className={styles.itemCustomizations}>
-                          {item.extras.map(e => e.nome).join(', ')}
+                          {item.extras.join(', ')}
                         </div>
                       )}
                     </div>

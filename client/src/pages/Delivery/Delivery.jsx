@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useOrder } from "../../context/useOrder";
 import styles from "./Delivery.module.css";
 import Navbar from "../../components/Navbar/Navbar";
+import { ordersApi } from "../../api";
 
 export default function Delivery() {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ export default function Delivery() {
     return novosErros;
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const novosErros = validar();
     if (Object.keys(novosErros).length > 0) {
       setErrors(novosErros);
