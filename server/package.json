@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "bun --watch index.ts",
     "start": "bun index.ts",
-    "seed": "bun seed.ts"
+    "seed": "bun seed.ts",
+    "migrate:single-company-code": "bun migrate-single-company-code.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

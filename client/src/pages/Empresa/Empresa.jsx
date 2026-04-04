@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
+import Footer from '../../components/Footer/Footer'
 import { empresasApi } from '../../api'
 import { useOrder } from '../../context/useOrder'
 import styles from './Empresa.module.css'
@@ -87,6 +88,7 @@ export default function Empresa() {
 					</section>
 				)}
 			</main>
+		<Footer />
 		</div>
 	)
 }

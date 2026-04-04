@@ -117,22 +117,17 @@ export interface EmpresaMenu {
   pratoIds: Prato[] | string[]
 }
 
-export interface EmpresaCodigo {
-  _id: string
-  code: string
-  ativo: boolean
-  maxUsosDia: number
-  usosDiaAtual: number
-  ultimoResetDia: string
-}
-
 export interface Empresa {
   _id: string
   nome: string
   ativo: boolean
   nrFuncionariosPagos: number
   menus: EmpresaMenu[]
-  codigos: EmpresaCodigo[]
+  codigo: string
+  codigoAtivo: boolean
+  maxUsosDia: number
+  usosDiaAtual: number
+  ultimoResetDia: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -140,7 +135,6 @@ export interface Empresa {
 export interface EmpresaCodigoValidation {
   empresaId: string
   empresaNome: string
-  codigoId: string
   codigo: string
   usosRestantesHoje: number
   menu: EmpresaMenu

@@ -71,7 +71,7 @@ interface AdminContextType {
   updateEmpresa: (id: string, data: Partial<EmpresaFormData>) => Promise<void>
   deleteEmpresa: (id: string) => Promise<void>
   regenerateEmpresaCodes: (id: string) => Promise<void>
-  toggleEmpresaCode: (empresaId: string, codigoId: string, ativo: boolean) => Promise<void>
+  toggleEmpresaCode: (empresaId: string, ativo: boolean) => Promise<void>
   createEmpresaMenu: (empresaId: string, data: EmpresaMenuFormData) => Promise<void>
   updateEmpresaMenu: (empresaId: string, menuId: string, data: Partial<EmpresaMenuFormData>) => Promise<void>
   deleteEmpresaMenu: (empresaId: string, menuId: string) => Promise<void>
@@ -257,6 +257,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       nome: data.nome,
       ativo: data.ativo,
       nrFuncionariosPagos: data.nrFuncionariosPagos,
+      maxUsosDia: data.maxUsosDia,
       menuNome: data.menuNome,
       pratoIds: data.pratoIds,
     })
@@ -268,6 +269,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       nome: data.nome,
       ativo: data.ativo,
       nrFuncionariosPagos: data.nrFuncionariosPagos,
+      maxUsosDia: data.maxUsosDia,
     })
     dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
   }, [])
@@ -282,8 +284,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
   }, [])
 
-  const toggleEmpresaCode = useCallback(async (empresaId: string, codigoId: string, ativo: boolean) => {
-    const empresa = await empresasApi.toggleCodigo(empresaId, codigoId, ativo)
+  const toggleEmpresaCode = useCallback(async (empresaId: string, ativo: boolean) => {
+    const empresa = await empresasApi.toggleCodigo(empresaId, ativo)
     dispatch({ type: 'UPDATE_EMPRESA', payload: empresa })
   }, [])
 

@@ -105,6 +105,27 @@
   padding: var(--space-xs) 0;
 }
 
+.resumoItemWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-xs) 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.resumoItemWrap:last-of-type {
+  border-bottom: none;
+}
+
+.resumoItemMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  text-align: left;
+}
+
 .totalRow {
   display: flex;
   justify-content: space-between;

@@ -101,3 +101,17 @@
 	color: inherit;
 	cursor: pointer;
 }
+
+.addCodesRow {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.addCodesInput {
+	width: 90px;
+	border: 1px solid var(--ui-border, #e5e7eb);
+	border-radius: 8px;
+	padding: 8px 10px;
+	font-size: 14px;
+}

@@ -4,6 +4,46 @@ import { useOrder } from '../../context/useOrder'
 import Navbar from '../../components/Navbar/Navbar'
 import styles from './Confirmation.module.css'
 
+function groupOrderItems(orderItems) {
+  const map = new Map()
+
+  for (const item of orderItems) {
+    const free = item.customizations?.free ?? []
+    const salt = item.customizations?.salt ?? 'Normal'
+    const paid = Array.isArray(item.customizations?.paid)
+      ? item.customizations.paid.map((p) => p.nome)
+      : item.customizations?.paid?.nome ? [item.customizations.paid.nome] : []
+    const unitPrice = item.total
+    const quantity = Math.max(1, item.quantity ?? 1)
+
+    const key = JSON.stringify({
+      pratoId: item.prato?._id ?? item.prato?.nome,
+      free,
+      salt,
+      paid,
+      unitPrice,
+    })
+
+    const existing = map.get(key)
+    if (existing) {
+      existing.quantity += quantity
+      existing.lineTotal += unitPrice * quantity
+    } else {
+      map.set(key, {
+        key,
+        pratoNome: item.prato?.nome ?? 'Prato',
+        free,
+        salt,
+        paid,
+        quantity,
+        unitPrice,
+        lineTotal: unitPrice * quantity,
+      })
+    }
+  }
+
+  return Array.from(map.values())
+}
 
 export default function Confirmation() {
   const navigate = useNavigate()
@@ -31,12 +71,6 @@ export default function Confirmation() {
     navigate('/')
   }
 
-  const whatsappNumero = '258841234567'
-  const whatsappMsg = encodeURIComponent(
-    `Olá! Fiz um pedido no eiFoods.\n\nNome: ${deliveryDetails.name}\nLocal: ${deliveryDetails.location}\nTotal: ${total} MZN`
-  )
-  const whatsappUrl = `https://wa.me/${whatsappNumero}?text=${whatsappMsg}`
-
   return (
     <div className={styles.page}>
 
@@ -46,19 +80,23 @@ export default function Confirmation() {
 
         <div className={styles.card}>
 
-          <div className={styles.icone}>✅</div>
+          <div className={styles.icone}>🎉</div>
 
-          <h1 className={styles.titulo}>Pedido Confirmado!</h1>
+          <h1 className={styles.titulo}>Comprovativo enviado!</h1>
           <p className={styles.subtitulo}>
-            O seu pedido foi registado com sucesso
+            Assim que confirmarmos o pagamento, o seu pedido entra em preparação.
           </p>
+
           {orderId && (
-            <p style={{ fontSize: 12, color: 'var(--text-3, #aaa)', marginTop: 4 }}>Ref: #{orderId.slice(-8).toUpperCase()}</p>
+            <div className={styles.infoRow}>
+              <span>🔖</span>
+              <span>Ref: <strong>#{orderId.slice(-8).toUpperCase()}</strong></span>
+            </div>
           )}
 
           <div className={styles.infoRow}>
             <span>🕛</span>
-            <span>Entrega às <strong>12h</strong></span>
+            <span>Entrega prevista às <strong>12h</strong></span>
           </div>
 
           <div className={styles.infoRow}>
@@ -85,17 +123,8 @@ export default function Confirmation() {
           <div className={styles.divider} />
 
           <p className={styles.obrigado}>
-            Obrigado pelo seu pedido, <strong>{deliveryDetails.name || 'Cliente'}</strong>! 🙏
+            Obrigado, <strong>{deliveryDetails.name || 'Cliente'}</strong>! Iremos confirmar via WhatsApp assim que o pagamento for validado. 🙏
           </p>
-
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            className={styles.btnWhatsapp}
-          >
-            💬 Contacte-nos pelo WhatsApp
-          </a>
 
           <button
             className={styles.btnNovo}

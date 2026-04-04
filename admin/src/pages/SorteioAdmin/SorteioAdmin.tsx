@@ -15,7 +15,18 @@ interface Participante {
 
 const DURACAO = 3000
 
+function isFridayInMaputo() {
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Maputo',
+    weekday: 'short',
+  }).format(new Date()).toLowerCase()
+
+  return weekday === 'fri'
+}
+
 export function SorteioAdmin() {
+  const [valorRifa, setValorRifa] = useState(10)
+  const [valorRifaInput, setValorRifaInput] = useState('10')
   const [pendentes, setPendentes] = useState<ApiSorteio['inscricoesPendentes']>([])
   const [participantes, setParticipantes] = useState<Participante[]>([])
   const [historico, setHistorico] = useState<ApiSorteio['historico']>([])
@@ -29,8 +40,11 @@ export function SorteioAdmin() {
   const [novoContacto, setNovoContacto] = useState('')
   const [mostrarForm, setMostrarForm] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const podeSortearHoje = isFridayInMaputo()
 
   function applySorteio(doc: ApiSorteio) {
+    setValorRifa(doc.valorRifa ?? 10)
+    setValorRifaInput(String(doc.valorRifa ?? 10))
     setPendentes(doc.inscricoesPendentes ?? [])
     setParticipantes(doc.participantes)
     setHistorico(doc.historico)
@@ -70,6 +84,11 @@ export function SorteioAdmin() {
   }, [])
 
   function sortear() {
+    if (!podeSortearHoje) {
+      setErro('O sorteio só pode ser realizado à sexta-feira (Africa/Maputo).')
+      return
+    }
+
     if (fase !== 'idle' || participantes.length === 0) return
     setFase('animando')
     setVencedor(null)
@@ -167,6 +186,23 @@ export function SorteioAdmin() {
     })()
   }
 
+  function salvarValorRifa() {
+    const valor = Number(valorRifaInput)
+    if (!Number.isFinite(valor) || valor < 0) {
+      setErro('Valor da rifa inválido')
+      return
+    }
+
+    void (async () => {
+      try {
+        const doc = await sorteioApi.updateValorRifa(valor)
+        applySorteio(doc)
+      } catch (e) {
+        setErro((e as Error).message)
+      }
+    })()
+  }
+
   if (loading) return <div style={{ padding: 24 }}>A carregar sorteio...</div>
 
   return (
@@ -212,6 +248,22 @@ export function SorteioAdmin() {
         </div>
       )}
 
+      <div className={styles.formCard}>
+        <h3 className={styles.formTitulo}>Valor da rifa</h3>
+        <div className={styles.formAcoes} style={{ justifyContent: 'flex-start' }}>
+          <input
+            className={styles.input}
+            type="number"
+            min={0}
+            value={valorRifaInput}
+            onChange={(e) => setValorRifaInput(e.target.value)}
+            style={{ maxWidth: 160 }}
+          />
+          <button className={styles.btnConfirmar} onClick={salvarValorRifa}>Guardar</button>
+          <span className={styles.label}>Atual: {valorRifa} MZN</span>
+        </div>
+      </div>
+
       <div className={styles.layout}>
 
         {/* Coluna esquerda — sorteio */}
@@ -255,7 +307,7 @@ export function SorteioAdmin() {
             </div>
 
             {fase === 'idle' && (
-              <button className={styles.btnSortear} onClick={sortear} disabled={participantes.length === 0}>
+              <button className={styles.btnSortear} onClick={sortear} disabled={participantes.length === 0 || !podeSortearHoje}>
                 Realizar Sorteio
               </button>
             )}
@@ -266,6 +318,9 @@ export function SorteioAdmin() {
               <div className={styles.tamborAcoes}>
                 <button className={styles.btnReiniciar} onClick={reiniciar}>Novo sorteio</button>
               </div>
+            )}
+            {!podeSortearHoje && (
+              <p className={styles.maquinaLabel}>Sorteio disponível apenas na sexta-feira (Africa/Maputo).</p>
             )}
           </div>
 

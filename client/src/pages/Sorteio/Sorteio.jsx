@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
+import Footer from '../../components/Footer/Footer'
 import { sorteioApi } from '../../api'
 import { CONFIG } from '../../data/menuData'
 import styles from './Sorteio.module.css'
@@ -14,10 +15,19 @@ const PRATO_SORTEIO = {
 }
 
 const PARTICIPANTES = []
-const TAXA_PARTICIPACAO = 10
+
+function isFridayInMaputo() {
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Maputo',
+    weekday: 'short',
+  }).format(new Date()).toLowerCase()
+
+  return weekday === 'fri'
+}
 
 export default function Sorteio() {
   const navigate = useNavigate()
+  const [valorRifa, setValorRifa] = useState(10)
   const [participantes, setParticipantes] = useState(PARTICIPANTES)
   const [vencedorAtual, setVencedorAtual] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -25,6 +35,7 @@ export default function Sorteio() {
   const [inscricao, setInscricao] = useState({ nome: '', empresa: '', contacto: '' })
   const [inscrevendo, setInscrevendo] = useState(false)
   const [inscricaoMsg, setInscricaoMsg] = useState(null)
+  const bloqueioSexta = isFridayInMaputo()
 
   useEffect(() => {
     let active = true
@@ -32,6 +43,7 @@ export default function Sorteio() {
       try {
         const data = await sorteioApi.get()
         if (!active) return
+        setValorRifa(Number.isFinite(data.valorRifa) ? data.valorRifa : 10)
         setParticipantes(data.participantes ?? [])
         setVencedorAtual(data.vencedorAtual ?? null)
       } catch (e) {
@@ -56,12 +68,17 @@ export default function Sorteio() {
     : null
 
   const whatsappTexto = encodeURIComponent(
-    `Olá! Quero participar no sorteio. Já fiz o pagamento de ${TAXA_PARTICIPACAO} MZN e envio o comprovativo.`
+    `Olá! Quero participar no sorteio. Já fiz o pagamento de ${valorRifa} MZN e envio o comprovativo.`
   )
   const whatsappUrl = `https://wa.me/${CONFIG.whatsappNumero}?text=${whatsappTexto}`
 
   async function submeterInscricao(e) {
     e.preventDefault()
+    if (bloqueioSexta) {
+      setInscricaoMsg('As inscrições ficam indisponíveis na sexta-feira. Volte a tentar de sábado a quinta.')
+      return
+    }
+
     if (!inscricao.nome.trim() || !inscricao.contacto.trim()) {
       setInscricaoMsg('Preencha nome e contacto para se inscrever.')
       return
@@ -113,10 +130,13 @@ export default function Sorteio() {
         <section className={styles.participarCard}>
           <h2 className={styles.participarTitulo}>Como participar</h2>
           <ol className={styles.participarLista}>
-            <li>Pague a taxa de participação de <strong>{TAXA_PARTICIPACAO} MZN</strong>.</li>
+            <li>Pague a taxa de participação de <strong>{valorRifa} MZN</strong>.</li>
             <li>Envie o comprovativo de pagamento no WhatsApp.</li>
             <li>Aguarde a confirmação do admin para entrar na lista de participantes.</li>
           </ol>
+          {bloqueioSexta && (
+            <p className={styles.inscricaoMsg}>Hoje (sexta-feira) as novas inscrições de rifa estão bloqueadas.</p>
+          )}
           <a
             href={whatsappUrl}
             target="_blank"
@@ -148,8 +168,8 @@ export default function Sorteio() {
                 onChange={(e) => setInscricao((prev) => ({ ...prev, contacto: e.target.value }))}
               />
             </div>
-            <button className={styles.btnInscrever} type="submit" disabled={inscrevendo}>
-              {inscrevendo ? 'A enviar...' : 'Enviar inscrição'}
+            <button className={styles.btnInscrever} type="submit" disabled={inscrevendo || bloqueioSexta}>
+              {inscrevendo ? 'A enviar...' : (bloqueioSexta ? 'Inscrições fechadas hoje' : 'Enviar inscrição')}
             </button>
             {inscricaoMsg && <p className={styles.inscricaoMsg}>{inscricaoMsg}</p>}
           </form>
@@ -255,6 +275,7 @@ export default function Sorteio() {
 
         </div>
       </main>
+      <Footer />
     </div>
   )
 }

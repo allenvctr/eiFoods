@@ -80,22 +80,17 @@ export interface ApiEmpresaMenu {
   pratoIds: ApiPrato[] | string[]
 }
 
-export interface ApiEmpresaCodigo {
-  _id: string
-  code: string
-  ativo: boolean
-  maxUsosDia: number
-  usosDiaAtual: number
-  ultimoResetDia: string
-}
-
 export interface ApiEmpresa {
   _id: string
   nome: string
   ativo: boolean
   nrFuncionariosPagos: number
   menus: ApiEmpresaMenu[]
-  codigos: ApiEmpresaCodigo[]
+  codigo: string
+  codigoAtivo: boolean
+  maxUsosDia: number
+  usosDiaAtual: number
+  ultimoResetDia: string
   createdAt: string
   updatedAt: string
 }
@@ -103,7 +98,6 @@ export interface ApiEmpresa {
 export interface ApiEmpresaCodigoValidation {
   empresaId: string
   empresaNome: string
-  codigoId: string
   codigo: string
   usosRestantesHoje: number
   menu: ApiEmpresaMenu
@@ -150,6 +144,7 @@ export interface ApiSorteioVencedor {
 
 export interface ApiSorteio {
   _id: string
+  valorRifa: number
   inscricoesPendentes: ApiSorteioInscricao[]
   participantes: ApiSorteioParticipante[]
   vencedorAtual: ApiSorteioVencedor | null
@@ -264,10 +259,10 @@ export const empresasApi = {
   get: (id: string) =>
     request<ApiEmpresa>(`/empresas/${id}`),
 
-  create: (data: { nome: string; ativo?: boolean; nrFuncionariosPagos: number; menuNome?: string; pratoIds?: string[] }) =>
+  create: (data: { nome: string; ativo?: boolean; nrFuncionariosPagos: number; menuNome?: string; pratoIds?: string[]; maxUsosDia?: number }) =>
     request<ApiEmpresa>('/empresas', json('POST', data)),
 
-  update: (id: string, data: Partial<{ nome: string; ativo: boolean; nrFuncionariosPagos: number }>) =>
+  update: (id: string, data: Partial<{ nome: string; ativo: boolean; nrFuncionariosPagos: number; maxUsosDia: number; codigoAtivo: boolean }>) =>
     request<ApiEmpresa>(`/empresas/${id}`, json('PUT', data)),
 
   delete: (id: string) =>
@@ -276,8 +271,8 @@ export const empresasApi = {
   regenerateCodes: (id: string) =>
     request<ApiEmpresa>(`/empresas/${id}/regenerate-codes`, json('POST', {})),
 
-  toggleCodigo: (empresaId: string, codigoId: string, ativo: boolean) =>
-    request<ApiEmpresa>(`/empresas/${empresaId}/codigos/${codigoId}/ativo`, json('PATCH', { ativo })),
+  toggleCodigo: (empresaId: string, ativo: boolean) =>
+    request<ApiEmpresa>(`/empresas/${empresaId}/codigo/ativo`, json('PATCH', { ativo })),
 
   createMenu: (empresaId: string, data: { nome: string; pratoIds: string[]; ativo?: boolean }) =>
     request<ApiEmpresa>(`/empresas/${empresaId}/menus`, json('POST', data)),
@@ -315,4 +310,7 @@ export const sorteioApi = {
 
   reset: () =>
     request<ApiSorteio>('/sorteio/reset', json('POST', {})),
+
+  updateValorRifa: (valorRifa: number) =>
+    request<ApiSorteio>('/sorteio/valor-rifa', json('PATCH', { valorRifa })),
 }

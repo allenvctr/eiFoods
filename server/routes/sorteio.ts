@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { randomUUID } from 'node:crypto'
 import Sorteio from '../models/Sorteio'
 import PratoDoDia, { type DiaSemana } from '../models/PratoDoDia'
+import { getMaputoWeekdayNumber, isFridayInMaputo } from '../lib/businessTime'
 
 const router = Router()
 
@@ -26,6 +27,7 @@ async function getOrCreateSorteio() {
   let doc = await Sorteio.findOne()
   if (!doc) {
     doc = await Sorteio.create({
+      valorRifa: 10,
       participantes: PARTICIPANTES_DEFAULT.map((p) => ({
         ...p,
         inscritoEm: new Date(),
@@ -44,7 +46,7 @@ function nextRef(participantes: Array<{ ref: string }>) {
 }
 
 async function getPremioHoje() {
-  const dayOfWeek = new Date().getDay()
+  const dayOfWeek = getMaputoWeekdayNumber()
   const diaSemana = DAY_MAP[dayOfWeek]
   if (!diaSemana) return { pratoNome: null, premioValor: null }
 
@@ -70,6 +72,10 @@ router.get('/', async (_req, res, next) => {
 // Cliente cria inscrição pendente (aguarda confirmação de pagamento pelo admin)
 router.post('/inscricoes', async (req, res, next) => {
   try {
+    if (isFridayInMaputo()) {
+      return res.status(403).json({ error: 'Inscrições para rifa não são permitidas às sextas-feiras' })
+    }
+
     const { nome, empresa, contacto } = req.body as { nome?: string; empresa?: string; contacto?: string }
 
     if (!nome?.trim()) {
@@ -127,6 +133,25 @@ router.post('/inscricoes/:id/confirmar', async (req, res, next) => {
       inscritoEm: new Date(),
     })
 
+    await doc.save()
+    res.json(doc)
+  } catch (err) {
+    next(err)
+  }
+})
+
+// PATCH /api/sorteio/valor-rifa
+router.patch('/valor-rifa', async (req, res, next) => {
+  try {
+    const { valorRifa } = req.body as { valorRifa?: number }
+    const valor = Number(valorRifa)
+
+    if (!Number.isFinite(valor) || valor < 0) {
+      return res.status(400).json({ error: 'valorRifa deve ser um número >= 0' })
+    }
+
+    const doc = await getOrCreateSorteio()
+    doc.valorRifa = valor
     await doc.save()
     res.json(doc)
   } catch (err) {
@@ -201,6 +226,10 @@ router.delete('/participantes/:id', async (req, res, next) => {
 // POST /api/sorteio/realizar
 router.post('/realizar', async (_req, res, next) => {
   try {
+    if (!isFridayInMaputo()) {
+      return res.status(400).json({ error: 'O sorteio só pode ser realizado à sexta-feira (Africa/Maputo)' })
+    }
+
     const doc = await getOrCreateSorteio()
     if (doc.participantes.length === 0) {
       return res.status(400).json({ error: 'Sem participantes para sortear' })

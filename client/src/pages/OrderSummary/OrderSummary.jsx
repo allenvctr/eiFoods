@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useOrder } from '../../context/useOrder'
 import Navbar from '../../components/Navbar/Navbar'
 import styles from './OrderSummary.module.css'
@@ -40,6 +40,7 @@ export default function OrderSummary() {
   const navigate = useNavigate()
   const { state, dispatch } = useOrder()
   const { orderItems } = state
+  const [metaExpandida, setMetaExpandida] = useState({})
 
   useEffect(() => {
     if (orderItems.length === 0) navigate('/menu')
@@ -118,6 +119,9 @@ export default function OrderSummary() {
                   item.customizations.salt !== 'Normal' && item.customizations.salt,
                   ...paidNomes,
                 ].filter(Boolean)
+                const precisaToggle = tags.length > 4 || tags.some((t) => String(t).length > 22)
+                const mostrarTudo = Boolean(metaExpandida[index])
+                const tagsVisiveis = mostrarTudo ? tags : tags.slice(0, 4)
 
                 return (
                   <li key={index} className={styles.item}>
@@ -159,9 +163,18 @@ export default function OrderSummary() {
 
                       {tags.length > 0 && (
                         <div className={styles.itemTags}>
-                          {tags.map((tag) => (
-                            <span key={tag} className={styles.itemTag}>{tag}</span>
+                          {tagsVisiveis.map((tag, tagIndex) => (
+                            <span key={`${tag}-${tagIndex}`} className={styles.itemTag}>{tag}</span>
                           ))}
+                          {precisaToggle && (
+                            <button
+                              type="button"
+                              className={styles.itemTagsToggle}
+                              onClick={() => setMetaExpandida((prev) => ({ ...prev, [index]: !prev[index] }))}
+                            >
+                              {mostrarTudo ? 'Ver menos' : 'Ver mais'}
+                            </button>
+                          )}
                         </div>
                       )}
                       {tags.length === 0 && (

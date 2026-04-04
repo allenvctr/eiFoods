@@ -22,6 +22,7 @@ const spec = {
     { name: 'Prato do Dia', description: 'Agenda semanal do prato em destaque' },
     { name: 'Encomendas', description: 'Gestão de encomendas de clientes' },
     { name: 'Sorteio', description: 'Gestão do sorteio diário (participantes e resultado)' },
+    { name: 'Empresas', description: 'Gestão de empresas, código único e menus exclusivos' },
   ],
 
   // ── Reusable schemas ──────────────────────────────────────────────────────
@@ -208,6 +209,7 @@ const spec = {
             items: { $ref: '#/components/schemas/SorteioVencedor' },
           },
           updatedAt: { type: 'string', format: 'date-time' },
+          valorRifa: { type: 'number', example: 10, description: 'Valor da rifa em centavos (inteiro)' },
         },
       },
 
@@ -690,7 +692,7 @@ const spec = {
       post: {
         tags: ['Sorteio'],
         summary: 'Criar inscrição pendente no sorteio',
-        description: 'Endpoint público para cliente se inscrever. A inscrição só vira participante válido após confirmação de pagamento no admin.',
+        description: 'Endpoint público para cliente se inscrever. A inscrição só vira participante válido após confirmação de pagamento no admin. Novas inscrições ficam bloqueadas às sextas-feiras (Africa/Maputo).',
         requestBody: {
           required: true,
           content: {
@@ -714,6 +716,10 @@ const spec = {
           },
           400: {
             description: 'Dados inválidos ou inscrição duplicada',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          },
+          403: {
+            description: 'Inscrições bloqueadas na sexta-feira',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
           },
         },
@@ -775,13 +781,14 @@ const spec = {
       post: {
         tags: ['Sorteio'],
         summary: 'Realizar sorteio e publicar vencedor atual',
+        description: 'O sorteio só pode ser realizado à sexta-feira (Africa/Maputo).',
         responses: {
           200: {
             description: 'Sorteio realizado',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
           },
           400: {
-            description: 'Sem participantes para sortear',
+            description: 'Sem participantes para sortear ou tentativa fora da sexta-feira',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
           },
         },
@@ -797,6 +804,65 @@ const spec = {
             description: 'Resultado atual removido',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
           },
+        },
+      },
+    },
+
+    '/sorteio/valor-rifa': {
+      patch: {
+        tags: ['Sorteio'],
+        summary: 'Atualizar valor da rifa (admin)',
+        description: 'Permite ao admin definir o valor cobrado por participação no sorteio.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['valorRifa'],
+                properties: {
+                  valorRifa: { type: 'number', example: 10, description: 'Valor da rifa em centavos' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Sorteio atualizado com novo valor',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Sorteio' } } },
+          },
+          400: { description: 'Valor inválido', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        },
+      },
+    },
+
+    '/empresas/{id}/codigo/ativo': {
+      patch: {
+        tags: ['Empresas'],
+        summary: 'Ativar/desativar código único da empresa',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['ativo'],
+                properties: {
+                  ativo: { type: 'boolean', example: true },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Empresa atualizada',
+            content: { 'application/json': { schema: { type: 'object' } } },
+          },
+          400: { description: 'Payload inválido', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          404: { description: 'Empresa não encontrada', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
         },
       },
     },

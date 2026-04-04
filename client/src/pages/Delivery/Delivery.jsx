@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useOrder } from "../../context/useOrder";
 import styles from "./Delivery.module.css";
 import Navbar from "../../components/Navbar/Navbar";
-import { ordersApi } from "../../api";
 
 export default function Delivery() {
   const navigate = useNavigate();
@@ -47,7 +46,7 @@ export default function Delivery() {
     return novosErros;
   }
 
-  async function handleSubmit() {
+  function handleSubmit() {
     const novosErros = validar();
     if (Object.keys(novosErros).length > 0) {
       setErrors(novosErros);
@@ -75,7 +74,7 @@ export default function Delivery() {
       console.error("Erro ao submeter pedido:", e);
     }
     dispatch({ type: "SET_DELIVERY_DETAILS", payload: form });
-    navigate("/confirmation");
+    navigate("/checkout");
   }
 
   return (
