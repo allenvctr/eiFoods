@@ -64,12 +64,17 @@ export default function Customize() {
   }
 
   function handleAdicionar() {
+    const quantidadeAtual = editIndex !== null
+      ? Math.max(1, Number(state.orderItems?.[editIndex]?.quantity ?? 1))
+      : 1
+
     const novoItem = {
       prato: selectedDish,
       customizations: { ...customizations, paid: extrasSelecionados },
       isForaDoDia,
       foraDoDiaTaxa: isForaDoDia ? 50 : 0,
       total: totalPrato,
+      quantity: quantidadeAtual,
     }
 
     if (editIndex !== null) {

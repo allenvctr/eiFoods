@@ -57,6 +57,7 @@ export default function Delivery() {
       const payload = {
         items: state.orderItems.map(item => ({
           pratoId: item.prato._id,
+          quantity: Math.max(1, Number(item.quantity ?? 1)),
           customizations: {
             free: item.customizations.free ?? [],
             salt: item.customizations.salt ?? 'Normal',

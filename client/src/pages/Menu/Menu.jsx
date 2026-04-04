@@ -93,7 +93,11 @@ export default function Menu() {
     dispatch({ type: 'REMOVE_ITEM', payload: index })
   }
 
-  const totalPedido = orderItems.reduce((acc, item) => acc + item.total, 0)
+  const totalItens = orderItems.reduce((acc, item) => acc + Math.max(1, Number(item.quantity ?? 1)), 0)
+  const totalPedido = orderItems.reduce((acc, item) => {
+    const quantidade = Math.max(1, Number(item.quantity ?? 1))
+    return acc + (item.total * quantidade)
+  }, 0)
 
   return (
     <div className={styles.page}>
@@ -223,7 +227,7 @@ export default function Menu() {
               <h3 className={styles.cartTitulo}>Meu Pedido</h3>
             </div>
             {orderItems.length > 0 && (
-              <span className={styles.cartBadge}>{orderItems.length}</span>
+              <span className={styles.cartBadge}>{totalItens}</span>
             )}
           </div>
 
@@ -246,12 +250,13 @@ export default function Menu() {
                     </div>
                     <div className={styles.cartItemInfo}>
                       <p className={styles.cartItemNome}>{item.prato.nome}</p>
+                      <p className={styles.cartItemCustom}>Qtd: {Math.max(1, Number(item.quantity ?? 1))}</p>
                       {item.customizations?.free?.length > 0 && (
                         <p className={styles.cartItemCustom}>{item.customizations.free.join(', ')}</p>
                       )}
                     </div>
                     <div className={styles.cartItemDireita}>
-                      <span className={styles.cartItemPreco}>{item.total} MZN</span>
+                      <span className={styles.cartItemPreco}>{item.total * Math.max(1, Number(item.quantity ?? 1))} MZN</span>
                       <button
                         className={styles.cartItemRemover}
                         onClick={() => handleRemoverItem(i)}

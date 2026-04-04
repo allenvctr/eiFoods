@@ -151,11 +151,13 @@ export function Orders() {
               </div>
               
               <div className={styles.orderItems}>
-                <div className={styles.itemsTitle}>Itens ({order.items.length})</div>
+                <div className={styles.itemsTitle}>
+                  Itens ({order.items.reduce((acc, item) => acc + Math.max(1, Number(item.quantity ?? 1)), 0)})
+                </div>
                 {order.items.map((item, index) => (
                   <div key={index} className={styles.orderItem}>
                     <div className={styles.itemDetails}>
-                      <div className={styles.itemName}>{item.pratoNome}</div>
+                      <div className={styles.itemName}>{Math.max(1, Number(item.quantity ?? 1))}x {item.pratoNome}</div>
                       {item.extras.length > 0 && (
                         <div className={styles.itemCustomizations}>
                           {item.extras.map(e => e.nome).join(', ')}

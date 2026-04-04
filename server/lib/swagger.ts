@@ -110,6 +110,7 @@ const spec = {
           pratoId: { type: 'string' },
           pratoNome: { type: 'string', example: 'Frango no Caril' },
           pratoPreco: { type: 'number', example: 350 },
+          quantity: { type: 'number', example: 2, minimum: 1 },
           customizations: {
             type: 'object',
             properties: {
@@ -556,6 +557,7 @@ const spec = {
                       required: ['pratoId'],
                       properties: {
                         pratoId: { type: 'string' },
+                        quantity: { type: 'number', minimum: 1, default: 1 },
                         customizations: {
                           type: 'object',
                           properties: {

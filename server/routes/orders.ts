@@ -31,13 +31,14 @@ async function getTodayPratoId(): Promise<string | null> {
 }
 
 // ── POST /api/orders ─────────────────────────────────────────────────────────
-// Body: { items: [{ pratoId, customizations, extraIds: string[] }], deliveryDetails }
+// Body: { items: [{ pratoId, quantity, customizations, extraIds: string[] }], deliveryDetails }
 // O total é sempre recalculado no servidor
 router.post('/', async (req, res, next) => {
   try {
     const { items, deliveryDetails, empresaCodigo } = req.body as {
       items: Array<{
         pratoId: string
+        quantity?: number
         customizations: { free: string[]; salt: string }
         extraIds: string[]
       }>
@@ -110,6 +111,10 @@ router.post('/', async (req, res, next) => {
     // ── Construir itens com preços do servidor ──
     const orderItems = await Promise.all(
       items.map(async (item) => {
+        if (item.quantity !== undefined && (!Number.isFinite(item.quantity) || Number(item.quantity) < 1)) {
+          throw Object.assign(new Error('Quantidade inválida para um dos itens'), { status: 400 })
+        }
+
         const prato = await Prato.findById(item.pratoId)
         if (!prato) throw Object.assign(new Error(`Prato ${item.pratoId} não encontrado`), { status: 404 })
 
@@ -123,15 +128,21 @@ router.post('/', async (req, res, next) => {
           : []
 
         const extrasTotal = extraDocs.reduce((sum, e) => sum + e.preco, 0)
+        const quantity = Number.isFinite(item.quantity) && Number(item.quantity) > 0
+          ? Math.floor(Number(item.quantity))
+          : 1
         const isForaDoDia = Boolean(todayPratoId) && String(prato._id) !== todayPratoId
-        if (isForaDoDia) foraDoDiaCount += 1
-        const foraDoDiaTaxa = isForaDoDia ? FORA_DO_DIA_TAXA : 0
-        const itemTotal = prato.preco + extrasTotal + foraDoDiaTaxa
+        if (isForaDoDia) foraDoDiaCount += quantity
+        const foraDoDiaTaxaUnit = isForaDoDia ? FORA_DO_DIA_TAXA : 0
+        const foraDoDiaTaxa = foraDoDiaTaxaUnit * quantity
+        const itemUnitTotal = prato.preco + extrasTotal + foraDoDiaTaxaUnit
+        const itemTotal = itemUnitTotal * quantity
 
         return {
           pratoId:    prato._id,
           pratoNome:  prato.nome,
           pratoPreco: prato.preco,
+          quantity,
           customizations: {
             free: item.customizations?.free ?? [],
             salt: item.customizations?.salt ?? 'Normal',

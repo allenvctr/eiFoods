@@ -21,7 +21,10 @@ export default function Confirmation() {
     return null
   }
 
-  const total = orderItems.reduce((acc, item) => acc + item.total, 0)
+  const total = orderItems.reduce((acc, item) => {
+    const quantidade = Math.max(1, Number(item.quantity ?? 1))
+    return acc + (item.total * quantidade)
+  }, 0)
 
   function handleNovosPedido() {
     dispatch({ type: 'RESET_ORDER' })
@@ -69,8 +72,8 @@ export default function Confirmation() {
             <p className={styles.resumoLabel}>RESUMO</p>
             {orderItems.map((item, index) => (
               <div key={index} className={styles.resumoItem}>
-                <span>{item.prato.nome}</span>
-                <span>{item.prato.preco} MZN</span>
+                <span>{Math.max(1, Number(item.quantity ?? 1))}x {item.prato.nome}</span>
+                <span>{item.total * Math.max(1, Number(item.quantity ?? 1))} MZN</span>
               </div>
             ))}
             <div className={styles.totalRow}>

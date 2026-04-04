@@ -17,6 +17,7 @@ export interface IOrderItem {
   pratoId: Types.ObjectId
   pratoNome: string
   pratoPreco: number
+  quantity: number
   customizations: IOrderCustomizations
   extras: IOrderExtra[]
   isForaDoDia: boolean
@@ -66,6 +67,7 @@ const OrderItemSchema = new Schema<IOrderItem>(
     pratoId:        { type: Schema.Types.ObjectId, ref: 'Prato', required: true },
     pratoNome:      { type: String, required: true },
     pratoPreco:     { type: Number, required: true, min: 0 },
+    quantity:       { type: Number, required: true, min: 1, default: 1 },
     customizations: { type: OrderCustomizationsSchema, required: true },
     extras:         { type: [OrderExtraSchema], default: [] },
     isForaDoDia:    { type: Boolean, default: false },

@@ -11,12 +11,29 @@ function orderReducer(state, action) {
     case 'ADD_TO_ORDER':
       return {
         ...state,
-        orderItems: [...state.orderItems, action.payload],
+        orderItems: [
+          ...state.orderItems,
+          {
+            ...action.payload,
+            quantity: Math.max(1, Number(action.payload?.quantity ?? 1)),
+          },
+        ],
         selectedDish: null,
         customizations: initialState.customizations,
       }
     case 'REMOVE_ITEM':
       return { ...state, orderItems: state.orderItems.filter((_, i) => i !== action.payload) }
+    case 'UPDATE_ITEM_QUANTITY':
+      return {
+        ...state,
+        orderItems: state.orderItems.map((item, i) => {
+          if (i !== action.payload.index) return item
+          return {
+            ...item,
+            quantity: Math.max(1, Number(action.payload.quantity ?? 1)),
+          }
+        }),
+      }
     case 'SET_DELIVERY_DETAILS':
       return { ...state, deliveryDetails: { ...state.deliveryDetails, ...action.payload } }
     case 'SET_EMPRESA_CODIGO':

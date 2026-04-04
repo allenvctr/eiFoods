@@ -44,6 +44,7 @@ export interface ApiOrderItem {
   pratoId: string
   pratoNome: string
   pratoPreco: number
+  quantity: number
   customizations: { free: string[]; salt: string }
   extras: ApiOrderExtra[]
   isForaDoDia: boolean
@@ -245,7 +246,7 @@ export const ordersApi = {
     request<ApiOrder>(`/orders/${id}`),
 
   create: (payload: {
-    items: Array<{ pratoId: string; customizations: { free: string[]; salt: string }; extraIds: string[] }>
+    items: Array<{ pratoId: string; quantity?: number; customizations: { free: string[]; salt: string }; extraIds: string[] }>
     deliveryDetails: ApiDeliveryDetails
     empresaCodigo?: string
   }) => request<ApiOrder>('/orders', json('POST', payload)),

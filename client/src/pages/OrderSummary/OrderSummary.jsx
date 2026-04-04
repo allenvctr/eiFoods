@@ -47,8 +47,15 @@ export default function OrderSummary() {
 
   if (orderItems.length === 0) return null
 
-  const subtotal = orderItems.reduce((acc, item) => acc + item.total, 0)
-  const itensForaDoDia = orderItems.filter((item) => item.isForaDoDia).length
+  const subtotal = orderItems.reduce((acc, item) => {
+    const quantidade = Math.max(1, Number(item.quantity ?? 1))
+    return acc + (item.total * quantidade)
+  }, 0)
+  const itensForaDoDia = orderItems.reduce((acc, item) => {
+    if (!item.isForaDoDia) return acc
+    return acc + Math.max(1, Number(item.quantity ?? 1))
+  }, 0)
+  const totalUnidades = orderItems.reduce((acc, item) => acc + Math.max(1, Number(item.quantity ?? 1)), 0)
   const taxaForaDoDia = itensForaDoDia * TAXA_FORA_DO_DIA
   const total = subtotal + TAXA_ENTREGA + taxaForaDoDia
 
@@ -61,6 +68,19 @@ export default function OrderSummary() {
     dispatch({ type: 'SELECT_DISH', payload: item.prato })
     dispatch({ type: 'SET_CUSTOMIZATION', payload: item.customizations })
     navigate('/customize', { state: { editIndex: index } })
+  }
+
+  function handleAlterarQuantidade(index, delta) {
+    const item = orderItems[index]
+    const atual = Math.max(1, Number(item?.quantity ?? 1))
+    const proxima = atual + delta
+
+    if (proxima < 1) return
+
+    dispatch({
+      type: 'UPDATE_ITEM_QUANTITY',
+      payload: { index, quantity: proxima },
+    })
   }
 
   return (
@@ -79,7 +99,7 @@ export default function OrderSummary() {
           </button>
           <h1 className={styles.title}>
             O seu carrinho
-            <span className={styles.titleBadge}>{orderItems.length}</span>
+            <span className={styles.titleBadge}>{totalUnidades}</span>
           </h1>
         </div>
 
@@ -89,6 +109,7 @@ export default function OrderSummary() {
           <div className={styles.colunaItens}>
             <ul className={styles.lista}>
               {orderItems.map((item, index) => {
+                const quantidade = Math.max(1, Number(item.quantity ?? 1))
                 const paidNomes = Array.isArray(item.customizations.paid)
                   ? item.customizations.paid.map(e => e.nome)
                   : item.customizations.paid?.nome ? [item.customizations.paid.nome] : []
@@ -115,7 +136,25 @@ export default function OrderSummary() {
                     <div className={styles.itemCorpo}>
                       <div className={styles.itemCabecalho}>
                         <p className={styles.itemNome}>{item.prato.nome}</p>
-                        <p className={styles.itemPreco}>{item.total} MZN</p>
+                        <p className={styles.itemPreco}>{item.total * quantidade} MZN</p>
+                      </div>
+
+                      <div className={styles.itemQuantidade}>
+                        <button
+                          className={styles.btnQtd}
+                          onClick={() => handleAlterarQuantidade(index, -1)}
+                          aria-label="Diminuir quantidade"
+                        >
+                          -
+                        </button>
+                        <span>{quantidade}</span>
+                        <button
+                          className={styles.btnQtd}
+                          onClick={() => handleAlterarQuantidade(index, 1)}
+                          aria-label="Aumentar quantidade"
+                        >
+                          +
+                        </button>
                       </div>
 
                       {tags.length > 0 && (
@@ -163,7 +202,7 @@ export default function OrderSummary() {
 
               <div className={styles.resumoLinhas}>
                 <div className={styles.resumoLinha}>
-                  <span className={styles.resumoLabel}>Subtotal ({orderItems.length} {orderItems.length === 1 ? 'item' : 'itens'})</span>
+                  <span className={styles.resumoLabel}>Subtotal ({totalUnidades} {totalUnidades === 1 ? 'item' : 'itens'})</span>
                   <span className={styles.resumoValor}>{subtotal} MZN</span>
                 </div>
                 <div className={styles.resumoLinha}>
